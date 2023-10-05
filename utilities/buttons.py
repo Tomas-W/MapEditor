@@ -1,6 +1,6 @@
 import pygame
 
-from utilities.sprites import tile_list, save_image, load_image, back_image, name_image
+from utilities.sprites import tile_list, save_image, load_image, back_image, name_image, get_current_tab_sprites
 from settings import *
 
 
@@ -34,14 +34,15 @@ class Button:
         return action
 
 
-def get_tile_buttons():
+def get_tile_buttons(tile_start_y, tab_name):
     button_list = []
     button_col = 0
     button_row = 0
-    for i in range(len(tile_list)):
+    tile_list_ = get_current_tab_sprites(tab_name=tab_name)
+    for i in range(len(tile_list_)):
         tile_button = Button(x=SCREEN_WIDTH + (85 * button_col + 50),
-                             y=110 * button_row + 40,
-                             image=tile_list[i],
+                             y=80 * button_row + tile_start_y,
+                             image=tile_list_[i],
                              scale=1)
         button_list.append(tile_button)
         button_col += 1

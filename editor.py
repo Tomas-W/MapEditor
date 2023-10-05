@@ -12,6 +12,8 @@ import utilities.buttons as buttons
 import utilities.sprites as sprites
 import utilities.fonts as fonts
 
+from utilities.helpers import get_preset_dir_names
+
 
 class Editor:
     def __init__(self):
@@ -31,22 +33,23 @@ class Editor:
         self.sky = sprites.sky_img
         self.background = sprites.background_img
         self.world_data = [[-1] * COLUMNS for _ in range(ROWS)]
-        self.small_font = fonts.small_font
+        self.label_font = fonts.label_font
+        self.tab_font = fonts.tab_font
         self.medium_font = fonts.medium_font
         self.clock = pygame.time.Clock()
         self.screen = screen
 
-        # Tiles
-        # self.tile_list = utilities.tile_list
+        # Tabs
+        self.tile_start_y = 0
+        self.tab_names = get_preset_dir_names()
+        self.current_tab = self.tab_names[0]
 
-        self.tile_list = sprites.get_sprites(location="images/hedge_sprites.png",
-                                             number_sprites=15,
-                                             width=32,
-                                             height=32,
-                                             scale=1)
-        self.tile_names = TILE_NAMES
+        # Tiles
+        self.level_objects = []
+        self.tile_list = sprites.get_current_tab_sprites(tab_name=self.current_tab)
+        self.tile_names = [f.split(".")[0] for f in os.listdir(os.path.join(EDITOR_DIR, "images/presets", self.current_tab)) if f.endswith('.png')]
         self.current_tile = 0
-        self.tile_buttons = buttons.get_tile_buttons()
+        self.tile_buttons = buttons.get_tile_buttons(len(self.tab_names) * 26 + 75, self.current_tab)
 
         # Utility
         self.save_button = buttons.get_save_button()
@@ -79,7 +82,6 @@ class Editor:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     self.scroll_left = True
-                    print("go left")
                 if event.key == pygame.K_d:
                     self.scroll_right = True
                 if event.key == pygame.K_w:
@@ -94,7 +96,6 @@ class Editor:
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     self.scroll_left = False
-                    print("stop left")
                 if event.key == pygame.K_d:
                     self.scroll_right = False
 
@@ -129,28 +130,6 @@ class Editor:
         if get_pos:
             rect = image.get_rect()
             return x_pos, y_pos, rect[2], rect[3]
-
-    def draw_center_text(self, text, font, color, x_pos, y_pos, get_pos=False):
-        """
-        Generic function to draw text on screen.
-        """
-        image = font.render(text, True, color)
-        self.screen.blit(image, (x_pos, y_pos))
-
-        if get_pos:
-            rect = image.get_rect()
-            return x_pos - 10, y_pos - 10, rect[2] + 20, rect[3] + 20
-
-    def draw_tile_labels(self):
-        """
-        Draws label above the tile on the side menu.
-        """
-        for tile, text in zip(self.tile_buttons, self.tile_names):
-            self.draw_text(text=text,
-                           font=self.small_font,
-                           color=WHITE,
-                           x_pos=tile.rect.topleft[0],
-                           y_pos=tile.rect.topleft[1] - 20)
 
     def draw_background(self):
         self.screen.blit(self.background, (self.scroll_x, self.scroll_y))
@@ -189,6 +168,50 @@ class Editor:
                           RIGHT_MARGIN,
                           SCREEN_HEIGHT + BOTTOM_MARGIN))
 
+    def draw_tab_names(self):
+        """
+        Draws folder names of presets so switch between the tiles.
+        """
+        tabs = 1
+        for i, name in enumerate(self.tab_names):
+            text_pos = self.draw_text(text=name,
+                                      font=self.tab_font,
+                                      color=WHITE,
+                                      x_pos=SCREEN_WIDTH + 20,
+                                      y_pos=15 + i * 28,
+                                      get_pos=True)
+
+            text_rect = pygame.rect.Rect(text_pos)
+            if text_rect.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(
+                    surface=screen,
+                    color=RED,
+                    rect=(text_pos[0] - 5,
+                          text_pos[1] - 5,
+                          text_pos[2] + 10,
+                          text_pos[3] + 10),
+                    width=3
+                )
+                for event in self.events:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            self.current_tab = name
+                            self.tile_list = sprites.get_current_tab_sprites(
+                                tab_name=self.current_tab)
+                            self.tile_names = [f.split(".")[0] for f in os.listdir(
+                                os.path.join(EDITOR_DIR, "images/presets", self.current_tab)) if
+                                               f.endswith('.png')]
+                            self.current_tile = 0
+                            self.tile_buttons = buttons.get_tile_buttons(
+                                len(self.tab_names) * 26 + 75, self.current_tab)
+
+            tabs += 1
+
+        pygame.draw.line(surface=self.screen,
+                         color=WHITE,
+                         start_pos=(SCREEN_WIDTH, 26 * tabs),
+                         end_pos=(SCREEN_WIDTH + RIGHT_MARGIN, 26 * tabs))
+
     def draw_and_select_tile(self):
         """
         Draws all tiles on side menu and stores currently selected tile.
@@ -196,6 +219,17 @@ class Editor:
         for button_count, button in enumerate(self.tile_buttons):
             if button.draw(self.screen):
                 self.current_tile = button_count
+
+    def draw_tile_labels(self):
+        """
+        Draws label above the tile on the side menu.
+        """
+        for tile, text in zip(self.tile_buttons, self.tile_names):
+            self.draw_text(text=text,
+                           font=self.label_font,
+                           color=WHITE,
+                           x_pos=tile.rect.topleft[0],
+                           y_pos=tile.rect.topleft[1] - 20)
 
     def highlight_selected_tile(self):
         """
@@ -339,6 +373,8 @@ class Editor:
             self.draw_tile_labels()
             self.draw_utility_buttons()
 
+            self.draw_tab_names()
+
             # Tile selection
             self.draw_and_select_tile()
             self.highlight_selected_tile()
@@ -356,6 +392,10 @@ class Editor:
                 self.manage_scrolling()
                 self.scroll_map()
                 self.add_new_tiles()
+
+            # if self.current_tab == "hedge":
+            #     self.tile_list = sprites.get_current_tab_sprites(self.current_tab)
+            #     self.tile_names = ["0", "0", "0", "0", "0", "0", "0", "0"]
 
             pygame.display.update()
             self.clock.tick(FPS)

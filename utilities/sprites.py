@@ -1,3 +1,5 @@
+import os
+
 import pygame
 import pickle
 
@@ -33,6 +35,18 @@ def get_sprites(location, number_sprites, width, height, scale):
 
     return sprites
 
+
+def get_current_tab_sprites(tab_name):
+    path = os.path.join(EDITOR_DIR, "images/presets", tab_name)
+    sprite_names = [f for f in os.listdir(path) if f.endswith('.png') and os.path.isfile(os.path.join(path, f))]
+
+    sprite_list = []
+    for sprite in sprite_names:
+        sprite_list.append(
+            pygame.image.load(os.path.join(path, sprite)).convert_alpha()
+        )
+
+    return sprite_list
 
 tile_list = get_sprites(location="images/hedge_sprites.png",
                         number_sprites=15,

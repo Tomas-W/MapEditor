@@ -1,7 +1,8 @@
 import pygame
 
-
-small_font = pygame.font.SysFont(name="Futura",
+label_font = pygame.font.SysFont(name="Futura",
                                  size=22)
+tab_font = pygame.font.SysFont(name="Futura",
+                               size=26)
 medium_font = pygame.font.SysFont(name="Futura",
                                   size=40)
