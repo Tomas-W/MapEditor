@@ -61,6 +61,25 @@ name_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/name_btn.png")).
 back_button = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
 
 
+def get_all_level_objects(folder_path):
+    # Create a dictionary to store images by their number
+    all_level_objects = {}
+
+    for subdir, _, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.png'):
+                # Extract the number from the file name
+                number = int(file.split('_')[0])
+
+                # Load the image
+                image = pygame.image.load(os.path.join(subdir, file)).convert_alpha()
+
+                # Store the image by its number
+                all_level_objects[number] = image
+
+    return all_level_objects
+
+
 def is_pickled(file_path):
     try:
         with open(file_path, "rb") as file:

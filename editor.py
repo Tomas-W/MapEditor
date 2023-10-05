@@ -45,10 +45,12 @@ class Editor:
         self.current_tab = self.tab_names[0]
 
         # Tiles
-        self.level_objects = []
+        self.level_objects = sprites.get_all_level_objects(os.path.join(EDITOR_DIR, "images/presets"))
         self.tile_list = sprites.get_current_tab_sprites(tab_name=self.current_tab)
-        self.tile_names = [f.split(".")[0] for f in os.listdir(os.path.join(EDITOR_DIR, "images/presets", self.current_tab)) if f.endswith('.png')]
+        self.tile_names = [f.split(".")[0].split("_")[-1] for f in os.listdir(os.path.join(EDITOR_DIR, "images/presets", self.current_tab)) if f.endswith('.png')]
+        self.tile_index = sorted([f.split("_")[0] for f in os.listdir(os.path.join(EDITOR_DIR, "images/presets", self.current_tab)) if f.endswith('.png')])
         self.current_tile = 0
+        self.current_object = 0
         self.tile_buttons = buttons.get_tile_buttons(len(self.tab_names) * 26 + 75, self.current_tab)
 
         # Utility
@@ -156,7 +158,7 @@ class Editor:
         for x, row in enumerate(self.world_data):
             for y, tile in enumerate(row):
                 if tile > -1:
-                    self.screen.blit(self.tile_list[tile],
+                    self.screen.blit(self.level_objects[tile],
                                      (y * GRID_SIZE_X + self.scroll_x,
                                       x * GRID_SIZE_Y + self.scroll_y))
 
@@ -219,13 +221,14 @@ class Editor:
         for button_count, button in enumerate(self.tile_buttons):
             if button.draw(self.screen):
                 self.current_tile = button_count
+                self.current_object = button.tile_index
 
     def draw_tile_labels(self):
         """
         Draws label above the tile on the side menu.
         """
         for tile, text in zip(self.tile_buttons, self.tile_names):
-            self.draw_text(text=text,
+            self.draw_text(text=text.split(".")[0].split("_")[-1],
                            font=self.label_font,
                            color=WHITE,
                            x_pos=tile.rect.topleft[0],
@@ -278,8 +281,9 @@ class Editor:
         # Limit mouse coordinates
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
             if pygame.mouse.get_pressed()[0] == 1:
-                if self.world_data[y][x] != self.current_tile:
-                    self.world_data[y][x] = self.current_tile
+                if self.world_data[y][x] != self.current_object:
+                    self.world_data[y][x] = self.current_object
+                    print(self.current_object)
             if pygame.mouse.get_pressed()[2] == 1:
                 self.world_data[y][x] = -1
 
