@@ -2,32 +2,94 @@ import os
 import sys
 
 
+FPS = 60
+BASE_SCROLL_SPEED = 5
+MAX_SCROLL_SPEED = 15
+CHANGE_NAME_TEXT = "Provide a name:"
+
+
+# ######## Paths
 EDITOR_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "images/")
 MAPS_DIR = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "maps/")
-PRESET_PATH = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "images/presets/")
+PRESET_DIR = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), "images/presets/")
 
+
+# ######## Screen
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 BOTTOM_MARGIN = 150
 RIGHT_MARGIN = 300
 
-WINDOW_WIDTH = 400
-WINDOW_HEIGHT = 300
 
-FPS = 60
-
+# ######## Grid
 ROWS = 80
 COLUMNS = 80
 GRID_SIZE_X = 32
 GRID_SIZE_Y = 32
 
+GRID_LINE_COLOR = (255, 255, 255)
+
+
+# ######## Panels
+RIGHT_PANEL_COLOR = (105, 70, 35)
+BOTTOM_PANEL_COLOR = (105, 70, 35)
+
+
+# ######## Tabs
+TAB_NAME_FONT_HEIGHT = 26
+TAB_NAME_X_OFFSET = SCREEN_WIDTH + 20
+TAB_NAME_Y_OFFSET = 15
+TAB_NAME_Y_SPACING = TAB_NAME_FONT_HEIGHT
+TAB_HIGHLIGHT_WIDTH = 3
+TAB_HIGHLIGHT_LEFT_OFFSET = -5
+TAB_HIGHLIGHT_RIGHT_OFFSET = 10
+
+TAB_NAME_COLOR = (255, 255, 255)
+TAB_HIGHLIGHT_COLOR = (200, 25, 25)
+
+
+# ######## Tiles
 TILE_SIZE_X = 32
 TILE_SIZE_Y = 32
 TILE_TYPES = 15
-TILE_NAMES = ["TopL", "TopR", "BotR", "BotL", "EndL", "EndR", "EndB", "EndT", "Horiz", "Vertic", "SplitL", "SplitR",   "SplitB", "SplitT", "Cross"]
-# TILE_NAMES = ["┌", "┐", "└", "┘", "─", "│", "←", "→", "↑", "↓", "┬", "┴", "├", "┤", "+"]
 
+TILE_HIGHLIGHT_COLOR = (200, 25, 25)
+TILE_LABEL_COLOR = (255, 255, 255)
+
+TILE_HIGHLIGHT_WIDTH = 3
+TILE_HIGHLIGHT_LEFT_OFFSET = -3
+TILE_HIGHLIGHT_RIGHT_OFFSET = 6
+TILE_BUTTON_Y_OFFSET = 75
+TILE_LABEL_Y_OFFSET = 20
+
+
+# ######## Utility
+SAVE_BUTTON_X_OFFSET = 15
+SAVE_BUTTON_Y_OFFSET = 15 + SCREEN_HEIGHT
+
+LOAD_BUTTON_X_OFFSET = 15
+LOAD_BUTTON_Y_OFFSET = 60 + SCREEN_HEIGHT
+
+NAME_BUTTON_X_OFFSET = 15
+NAME_BUTTON_Y_OFFSET = 105 + SCREEN_HEIGHT
+
+BACK_BUTTON_X_OFFSET_NAME_SCREEN = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 - 32
+BACK_BUTTON_Y_OFFSET_NAME_SCREEN = SCREEN_HEIGHT + BOTTOM_MARGIN - 50
+
+
+# ######## Change Name
+CHANGE_NAME_TITLE_X_OFFSET = 550
+CHANGE_NAME_TITLE_Y_OFFSET = 400
+
+CHANGE_NAME_X_OFFSET = None
+CHANGE_NAME_Y_OFFSET = 700
+
+CHANGE_NAME_TITLE_COLOR = (255, 255, 255)
+CHANGE_NAME_COLOR = (255, 255, 255)
+
+
+# ######## Colors
 BROWN = (105, 70, 35)
 DARK_BROWN = (95, 78, 57)
 ORANGE = (166, 101, 68)

@@ -1,7 +1,6 @@
-import os
-
 import pygame
 import pickle
+from typing import List, Dict
 
 from settings import *
 
@@ -11,17 +10,23 @@ sky_img = pygame.image.load(os.path.join(EDITOR_DIR, "images/clouds.png")).conve
 background_img = pygame.image.load(os.path.join(EDITOR_DIR, "images/grass.png")).convert()
 
 
-def get_sprites(location, number_sprites, width, height, scale):
+def get_sprites(location: str,
+                number_sprites: int,
+                width: int,
+                height: int,
+                scale: int) -> List[pygame.Surface]:
     """
-    Returns a list of individual sprites taken from the given sheet.
+        Returns a list of individual sprites taken from the given sheet.
 
-    :param location: Path to image file containing the sprites (png).
-    :param number_sprites: Number of sprites to obtain (int).
-    :param width: Sprite width in pixels (int).
-    :param height: Sprite height in pixels (int).
-    :param scale: Magnification in comparison with the original (int).
+        Args:
+            location (str): Path to image file containing the sprites (png).
+            number_sprites (int): Number of sprites to obtain.
+            width (int): Sprite width in pixels.
+            height (int): Sprite height in pixels.
+            scale (int): Scaling in comparison with the original.
 
-    :return: List of sprite images.
+        Returns:
+            List[pygame.Surface]: List of sprite images.
     """
     sprite_sheet = pygame.image.load(location).convert_alpha()
 
@@ -29,14 +34,24 @@ def get_sprites(location, number_sprites, width, height, scale):
     for i in range(0, number_sprites):
         image = pygame.Surface((width, height))
         image.blit(sprite_sheet, (0, 0), ((i * width), 0, width, height))
-        image = pygame.transform.scale(image, (width * scale, height * scale))
+        if not scale == 1:
+            image = pygame.transform.scale(image, (width * scale, height * scale))
         image.set_colorkey((0, 0, 0))
         sprites.append(image)
 
     return sprites
 
 
-def get_current_tab_sprites(tab_name):
+def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
+    """
+        Get a list of sprites for the current tab.
+
+        Args:
+            tab_name (str): Name of the current tab.
+
+        Returns:
+            List[pygame.Surface]: List of sprite images.
+        """
     path = os.path.join(EDITOR_DIR, "images/presets", tab_name)
     sprite_names = [f for f in os.listdir(path) if f.endswith('.png') and os.path.isfile(os.path.join(path, f))]
 
@@ -48,11 +63,6 @@ def get_current_tab_sprites(tab_name):
 
     return sprite_list
 
-tile_list = get_sprites(location="images/hedge_sprites.png",
-                        number_sprites=15,
-                        width=32,
-                        height=32,
-                        scale=1)
 
 save_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
 load_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
@@ -61,7 +71,16 @@ name_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/name_btn.png")).
 back_button = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
 
 
-def get_all_level_objects(folder_path):
+def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
+    """
+        Get all level objects from a folder.
+
+        Args:
+            folder_path (str): Path to the folder containing level objects.
+
+        Returns:
+            dict: A dictionary with level objects indexed by number.
+        """
     # Create a dictionary to store images by their number
     all_level_objects = {}
 
@@ -80,10 +99,20 @@ def get_all_level_objects(folder_path):
     return all_level_objects
 
 
-def is_pickled(file_path):
+def is_pickled(file_path: str) -> bool:
+    """
+        Check if a file is pickled.
+
+        Args:
+            file_path (str): Path to the file.
+
+        Returns:
+            bool: True if the file is pickled, False otherwise.
+        """
     try:
         with open(file_path, "rb") as file:
             pickle.load(file)
         return True
+
     except (pickle.UnpicklingError, EOFError, FileNotFoundError):
         return False
