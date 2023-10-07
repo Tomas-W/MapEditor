@@ -64,11 +64,11 @@ def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
     return sprite_list
 
 
-save_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
-load_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
-back_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
-name_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/name_btn.png")).convert_alpha()
-back_button = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
+save_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
+load_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
+back_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
+name_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/name_btn.png")).convert_alpha()
+ok_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/ok_btn.png")).convert_alpha()
 
 
 def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:

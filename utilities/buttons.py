@@ -1,6 +1,6 @@
 import pygame
 
-from utilities.sprites import save_image, load_image, back_image, name_image, get_current_tab_sprites
+from utilities.sprites import save_button_image, load_button_image, back_button_image, name_button_image, ok_button_image, get_current_tab_sprites
 from settings import *
 
 
@@ -102,7 +102,7 @@ def get_save_button() -> Button:
        """
     return Button(SAVE_BUTTON_X_OFFSET,
                   y=SAVE_BUTTON_Y_OFFSET,
-                  image=save_image,
+                  image=save_button_image,
                   scale=1,
                   tile_index=None)
 
@@ -116,7 +116,7 @@ def get_load_button() -> Button:
        """
     return Button(x=LOAD_BUTTON_X_OFFSET,
                   y=LOAD_BUTTON_Y_OFFSET,
-                  image=load_image,
+                  image=load_button_image,
                   scale=1,
                   tile_index=None)
 
@@ -130,20 +130,34 @@ def get_name_button() -> Button:
        """
     return Button(x=NAME_BUTTON_X_OFFSET,
                   y=NAME_BUTTON_Y_OFFSET,
-                  image=name_image,
+                  image=name_button_image,
                   scale=1,
                   tile_index=None)
 
 
-def get_back_button_name_screen() -> Button:
+def get_back_button() -> Button:
     """
        Get the back button.
 
        Returns:
            Button: The back button.
        """
-    return Button(x=BACK_BUTTON_X_OFFSET_NAME_SCREEN,
+    return Button(x=(SCREEN_WIDTH + RIGHT_MARGIN) // 2 - back_button_image.get_width() * 1.5,
                   y=BACK_BUTTON_Y_OFFSET_NAME_SCREEN,
-                  image=back_image,
+                  image=back_button_image,
+                  scale=1,
+                  tile_index=None)
+
+
+def get_ok_button() -> Button:
+    """
+       Get the ok button.
+
+       Returns:
+           Button: The ok button.
+       """
+    return Button(x=(SCREEN_WIDTH + RIGHT_MARGIN) // 2 + ok_button_image.get_width() // 2,
+                  y=BACK_BUTTON_Y_OFFSET_NAME_SCREEN,
+                  image=ok_button_image,
                   scale=1,
                   tile_index=None)

@@ -20,6 +20,7 @@ class Editor:
     def __init__(self):
         # Setup
         self.map_name: str = "New map"
+        self.temp_map_name: str = self.map_name
         self.sky = sprites.sky_img
         self.background = sprites.background_img
         self.world_data: list[list[int]] = [[-1] * COLUMNS for _ in range(ROWS)]
@@ -65,7 +66,8 @@ class Editor:
         self.save_button = buttons.get_save_button()
         self.load_button = buttons.get_load_button()
         self.name_button = buttons.get_name_button()
-        self.back_button = buttons.get_back_button_name_screen()
+        self.back_button = buttons.get_back_button()
+        self.ok_button = buttons.get_ok_button()
 
         # States
         self.is_running = True
@@ -139,7 +141,7 @@ class Editor:
                   color: tuple[int, int, int],
                   x_pos: int,
                   y_pos: int,
-                  get_pos: bool = False) -> Union[None, tuple[int, int, int]]:
+                  get_rect: bool = False):
         """
            Generic function to draw text on screen.
 
@@ -149,7 +151,7 @@ class Editor:
                color (tuple[int, int, int]): Text color in RGB format.
                x_pos (int): Text x-position.
                y_pos (int): Text y-position.
-               get_pos (bool, optional): Flag to indicate if position information is needed.
+               get_rect (bool, optional): Flag to indicate if position information is needed.
                    Default is False.
 
            Returns:
@@ -161,9 +163,39 @@ class Editor:
         self.screen.blit(image,
                          (x_pos, y_pos))
 
-        if get_pos:
+        if get_rect:
             rect = image.get_rect()
-            return x_pos, y_pos, rect[2], rect[3]
+            return rect
+
+    def draw_text_centered_x(self,
+                             text: str,
+                             font: pygame.font,
+                             color: tuple[int, int, int],
+                             y_pos: int,
+                             get_rect: bool = False):
+        """
+           Generic function to draw text on center of x-axis of screen.
+
+           Args:
+               text (str): Text to blit to screen.
+               font (pygame.font.Font): pygame.font object.
+               color (tuple[int, int, int]): Text color in RGB format.
+               y_pos (int): Text y-position.
+               get_rect (bool, optional): Flag to indicate if position information is needed.
+                   Default is False.
+
+           Returns:
+               None or Tuple[int, int, int, int]: If get_pos is True, returns a tuple containing
+                   (x-position, y-position, width, height) of the rendered text.
+                   Otherwise, returns None.
+        """
+        image = font.render(text, True, color)
+        rect = image.get_rect()
+        self.screen.blit(image, ((SCREEN_WIDTH + RIGHT_MARGIN) // 2 - rect.width // 2, y_pos))
+
+        if get_rect:
+            centered_rect = image.get_rect()
+            return centered_rect
 
     def draw_background(self) -> None:
         """
@@ -227,7 +259,7 @@ class Editor:
                                       color=TAB_NAME_COLOR,
                                       x_pos=TAB_NAME_X_OFFSET,
                                       y_pos=TAB_NAME_Y_OFFSET + i * TAB_NAME_Y_SPACING,
-                                      get_pos=True)
+                                      get_rect=True)
 
             text_rect = pygame.rect.Rect(text_pos)
             # Check for collision between mouse and tab
@@ -248,12 +280,14 @@ class Editor:
                             # Load settings
                             self.current_tab = name
                             self.current_tile = 0
-                            self.current_object = helpers.get_tile_indexes(current_tab=self.current_tab)[0]
+                            self.current_object = \
+                                helpers.get_tile_indexes(current_tab=self.current_tab)[0]
                             self.tile_list = sprites.get_current_tab_sprites(
                                 tab_name=self.current_tab)
                             self.tile_names = helpers.get_tile_names(current_tab=self.current_tab)
                             self.tile_buttons = buttons.get_tile_buttons(
-                                tile_start_y=len(self.tab_names) * TAB_NAME_FONT_HEIGHT + TILE_BUTTON_Y_OFFSET,
+                                tile_start_y=len(
+                                    self.tab_names) * TAB_NAME_FONT_HEIGHT + TILE_BUTTON_Y_OFFSET,
                                 tab_name=self.current_tab)
 
             tabs += 1
@@ -290,8 +324,10 @@ class Editor:
         """
         pygame.draw.rect(surface=self.screen,
                          color=TILE_HIGHLIGHT_COLOR,
-                         rect=(self.tile_buttons[self.current_tile].rect.topleft[0] + TILE_HIGHLIGHT_LEFT_OFFSET,
-                               self.tile_buttons[self.current_tile].rect.topleft[1] + TILE_HIGHLIGHT_LEFT_OFFSET,
+                         rect=(self.tile_buttons[self.current_tile].rect.topleft[
+                                   0] + TILE_HIGHLIGHT_LEFT_OFFSET,
+                               self.tile_buttons[self.current_tile].rect.topleft[
+                                   1] + TILE_HIGHLIGHT_LEFT_OFFSET,
                                TILE_SIZE_X + TILE_HIGHLIGHT_RIGHT_OFFSET,
                                TILE_SIZE_Y + TILE_HIGHLIGHT_RIGHT_OFFSET),
                          width=TILE_HIGHLIGHT_WIDTH)
@@ -359,18 +395,27 @@ class Editor:
 
                 if events.key == pygame.K_BACKSPACE:
                     # Delete last character
-                    self.map_name = self.map_name[:-1]
+                    self.temp_map_name = self.temp_map_name[:-1]
 
                 elif events.key == pygame.K_RETURN:
                     # Exit out
                     self.is_changing_name = False
                     self.is_building = True
+                    self.map_name = self.temp_map_name
 
                 else:
                     # Add new character to end
-                    self.map_name += events.unicode
+                    self.temp_map_name += events.unicode
 
+        # Do not save new map name
         if self.back_button.draw(self.screen):
+            self.temp_map_name = self.map_name
+            self.is_changing_name = False
+            self.is_building = True
+
+        # Save new map name
+        if self.ok_button.draw(self.screen):
+            self.map_name = self.temp_map_name
             self.is_changing_name = False
             self.is_building = True
 
@@ -379,18 +424,16 @@ class Editor:
             Blits title and name of the map to the screen.
         """
         # Title
-        self.draw_text(text=CHANGE_NAME_TEXT,
-                       font=self.change_name_font,
-                       color=CHANGE_NAME_TITLE_COLOR,
-                       x_pos=CHANGE_NAME_TITLE_X_OFFSET,
-                       y_pos=CHANGE_NAME_TITLE_Y_OFFSET)
+        self.draw_text_centered_x(text=CHANGE_NAME_TEXT,
+                                  font=self.change_name_font,
+                                  y_pos=CHANGE_NAME_TITLE_Y_OFFSET,
+                                  color=CHANGE_NAME_TITLE_COLOR)
 
         # Name
-        self.draw_text(text=self.map_name,
-                       font=self.change_name_font,
-                       color=CHANGE_NAME_COLOR,
-                       x_pos=(SCREEN_WIDTH + RIGHT_MARGIN) // 2 - 8 * len(self.map_name),  # CHANGE
-                       y_pos=CHANGE_NAME_Y_OFFSET)
+        self.draw_text_centered_x(text=self.temp_map_name,
+                                  font=self.change_name_font,
+                                  y_pos=CHANGE_NAME_Y_OFFSET,
+                                  color=CHANGE_NAME_COLOR)
 
     def draw_saved_maps_text(self) -> None:
         """
@@ -407,7 +450,7 @@ class Editor:
                                            color=WHITE,
                                            x_pos=(SCREEN_WIDTH + RIGHT_MARGIN) // 3,
                                            y_pos=i * 75 + 100,
-                                           get_pos=True)
+                                           get_rect=True)
 
             text_rect = pygame.rect.Rect(saved_map_pos)
 
