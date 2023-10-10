@@ -1,7 +1,14 @@
+from typing import List, Self, Union
+
 import pygame
 
-from utilities.sprites import save_button_image, load_button_image, back_button_image, name_button_image, ok_button_image, get_current_tab_sprites
-from settings import *
+from settings.paths import *
+from settings.bottom_panel import *
+from settings.minimap import *
+from settings.right_panel import *
+
+from utilities.sprites import save_button_image, load_button_image, back_button_image, \
+    name_button_image, ok_button_image, get_current_tab_sprites, sets_button_image
 
 
 class Button:
@@ -10,7 +17,7 @@ class Button:
                  y: int,
                  image: pygame.Surface,
                  scale: int,
-                 tile_index: int) -> None:
+                 tile_index: Union[None, int]) -> Self:
         """
             Initialize a Button.
 
@@ -61,14 +68,14 @@ class Button:
         return action
 
 
-def get_tile_buttons(tile_start_y: int,
-                     tab_name: str) -> list[Button]:
+def get_tile_buttons(tab_names: List[str],
+                     current_tab_name: str) -> List[Button]:
     """
        Get a list of tile buttons.
 
        Args:
-           tile_start_y (int): The y-coordinate for the first row of buttons.
-           tab_name (str): The name of the current tab.
+           tab_names (List[str]): List of tab names (preset folders).
+           current_tab_name (str): The name of the current tab.
 
        Returns:
            List[Button]: A list of tile buttons.
@@ -76,11 +83,18 @@ def get_tile_buttons(tile_start_y: int,
     button_list = []
     button_col = 0
     button_row = 0
-    tile_list_ = get_current_tab_sprites(tab_name=tab_name)
-    index_list = sorted([int(f.split("_")[0]) for f in os.listdir(os.path.join(EDITOR_DIR, "images/presets", tab_name)) if f.endswith('.png')])
+
+    # Get tiles corresponding to the current tab
+    tile_list_ = get_current_tab_sprites(tab_name=current_tab_name)
+    # Get their indexes for tile-map
+    index_list = sorted([int(f.split("_")[0]) for f in
+                         os.listdir(os.path.join(PRESET_DIR, current_tab_name)) if
+                         f.endswith('.png')])
+
+    # Create and append all tile buttons
     for i in range(len(tile_list_)):
         tile_button = Button(x=SCREEN_WIDTH + (85 * button_col + 50),
-                             y=80 * button_row + tile_start_y,
+                             y=80 * button_row + TILE_START_Y,
                              image=tile_list_[i],
                              scale=1,
                              tile_index=index_list[i])
@@ -93,6 +107,20 @@ def get_tile_buttons(tile_start_y: int,
     return button_list
 
 
+def get_sets_button() -> Button:
+    """
+       Get the sets button.
+
+       Returns:
+           Button: The sets button.
+       """
+    return Button(x=SETS_BUTTON_X,
+                  y=SETS_BUTTON_Y,
+                  image=sets_button_image,
+                  scale=1,
+                  tile_index=None)
+
+
 def get_save_button() -> Button:
     """
        Get the save button.
@@ -100,7 +128,7 @@ def get_save_button() -> Button:
        Returns:
            Button: The save button.
        """
-    return Button(SAVE_BUTTON_X_OFFSET,
+    return Button(x=SAVE_BUTTON_X_OFFSET,
                   y=SAVE_BUTTON_Y_OFFSET,
                   image=save_button_image,
                   scale=1,

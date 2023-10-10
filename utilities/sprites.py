@@ -1,13 +1,27 @@
 import pygame
-import pickle
 from typing import List, Dict
 
-from settings import *
+from settings.setup import *
+from settings.paths import *
 
-EDITOR_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+sky_img = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/clouds.png")).convert()
+background_img = pygame.transform.scale(
+    pygame.image.load(os.path.join(EDITOR_DIR, "images/grass.png")).convert(),
+    (COLUMNS * GRID_SIZE_X, ROWS * GRID_SIZE_Y))
 
-sky_img = pygame.image.load(os.path.join(EDITOR_DIR, "images/clouds.png")).convert()
-background_img = pygame.image.load(os.path.join(EDITOR_DIR, "images/grass.png")).convert()
+sets_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/sets_btn.png")).convert_alpha()
+save_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
+load_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
+back_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
+name_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/name_btn.png")).convert_alpha()
+ok_button_image = pygame.image.load(
+    os.path.join(EDITOR_DIR, "images/ok_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,
@@ -42,6 +56,19 @@ def get_sprites(location: str,
     return sprites
 
 
+def get_preview_image(tab_name: str) -> pygame.Surface:
+    """
+        Gets the first image in the preset folders.
+
+        Args:
+            tab_name (str): Name of the current tab.
+
+        Returns:
+             pygame.Surface: Preview image.
+    """
+    return get_current_tab_sprites(tab_name=tab_name)[0]
+
+
 def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
     """
         Get a list of sprites for the current tab.
@@ -53,7 +80,8 @@ def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
             List[pygame.Surface]: List of sprite images.
         """
     path = os.path.join(EDITOR_DIR, "images/presets", tab_name)
-    sprite_names = [f for f in os.listdir(path) if f.endswith('.png') and os.path.isfile(os.path.join(path, f))]
+    sprite_names = [f for f in os.listdir(path) if
+                    f.endswith('.png') and os.path.isfile(os.path.join(path, f))]
 
     sprite_list = []
     for sprite in sprite_names:
@@ -62,13 +90,6 @@ def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
         )
 
     return sprite_list
-
-
-save_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
-load_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
-back_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
-name_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/name_btn.png")).convert_alpha()
-ok_button_image = pygame.image.load(os.path.join(EDITOR_DIR, "images/ok_btn.png")).convert_alpha()
 
 
 def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
@@ -81,7 +102,7 @@ def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
         Returns:
             dict: A dictionary with level objects indexed by number.
         """
-    # Create a dictionary to store images by their number
+    # Create a dictionary to store images by their index
     all_level_objects = {}
 
     for subdir, _, files in os.walk(folder_path):
@@ -93,26 +114,7 @@ def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
                 # Load the image
                 image = pygame.image.load(os.path.join(subdir, file)).convert_alpha()
 
-                # Store the image by its number
+                # Store the image by its index
                 all_level_objects[number] = image
 
     return all_level_objects
-
-
-def is_pickled(file_path: str) -> bool:
-    """
-        Check if a file is pickled.
-
-        Args:
-            file_path (str): Path to the file.
-
-        Returns:
-            bool: True if the file is pickled, False otherwise.
-        """
-    try:
-        with open(file_path, "rb") as file:
-            pickle.load(file)
-        return True
-
-    except (pickle.UnpicklingError, EOFError, FileNotFoundError):
-        return False
