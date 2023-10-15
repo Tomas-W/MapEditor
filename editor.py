@@ -1,4 +1,5 @@
-from typing import Union, List
+import time
+from typing import List
 
 import pygame
 
@@ -14,6 +15,8 @@ from settings.minimap import *
 
 screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
+
+from menus import Menu
 
 import utilities.buttons as buttons
 import utilities.fonts as fonts
@@ -34,7 +37,7 @@ class Editor:
         self._columns = COLUMNS
         self._grid_size_x = GRID_SIZE_X
         self._grid_size_y = GRID_SIZE_Y
-        self.world_data: List[List[int]] = helpers.get_world_data(
+        self.world_data: List[List[int]] = helpers.get_fresh_world_data(
             columns=self._columns,
             rows=self._rows
         )
@@ -46,8 +49,8 @@ class Editor:
 
         self.label_font: pygame.font = fonts.label_font
         self.tab_font: pygame.font = fonts.tab_font
-        self.change_name_font: pygame.font = fonts.change_name_font
-        self.map_names_font: pygame.font = fonts.map_names_font
+        self.change_name_font: pygame.font = fonts.rename_map_font
+        self.map_names_font: pygame.font = fonts.load_map_font
 
         # Scrolling
         self.scroll_left = False
@@ -59,6 +62,9 @@ class Editor:
         self.scroll_speed = BASE_SCROLL_SPEED
         self.base_scroll_speed = BASE_SCROLL_SPEED
         self.max_scroll_speed = MAX_SCROLL_SPEED
+
+        # Menus
+        self.menus = Menu(editor=self)
 
         # Tabs
         self.tile_start_y: int = 0
@@ -101,6 +107,11 @@ class Editor:
         self.is_building = True
         self.is_changing_name = False
         self.is_loading_map = False
+
+        self.test = 100
+
+    def __str__(self):
+        return "Editor instance"
 
     def manage_quitting(self) -> None:
         """
@@ -199,81 +210,34 @@ class Editor:
     def draw_sets_button(self) -> None:
         """
             Draws button above tiles to open a select menu to switch between tile presets.
+
         """
         if self.sets_button.draw(self.screen):
             self.displaying_tabs = not self.displaying_tabs
 
-    def draw_tab_names(self) -> None:
+    def load_new_preset(self, selected_preset: str) -> None:
         """
-            Draws names of sub-folders in 'presets' folder on the side panel and
-                allows switching between different tiles contained in the selected folder.
+            Loads all settings for the selected preset.
+
+            Args:
+                 selected_preset (str): Name of the preset to load.
         """
-        tabs = 1
-        # Draw the clickable folder names
-        for i, name in enumerate(self.shortened_tab_names):
-            text_pos = drawing.draw_text(screen=self.screen,
-                                         text=name,
-                                         font=self.tab_font,
-                                         color=TAB_NAME_COLOR,
-                                         x_pos=TAB_NAME_X_OFFSET,
-                                         y_pos=TAB_NAME_Y_OFFSET + i * TAB_NAME_Y_SPACING,
-                                         get_rect=True)
+        self.current_tab = selected_preset
+        self.current_tile = 0
 
-            text_rect = pygame.rect.Rect(text_pos)
-            text_rect[2] = SCREEN_WIDTH + RIGHT_MARGIN - text_rect[0]
-            # Check for collision between mouse and tab
-            # Highlight name
-            if text_rect.collidepoint(pygame.mouse.get_pos()):
-                pygame.draw.rect(
-                    surface=screen,
-                    color=TAB_HIGHLIGHT_COLOR,
-                    rect=(text_pos[0] + TAB_HIGHLIGHT_LEFT_OFFSET,
-                          text_pos[1] + TAB_HIGHLIGHT_TOP_OFFSET * 1.5,
-                          text_rect[2] - 16,
-                          text_pos[3] + TAB_HIGHLIGHT_BOTTOM_OFFSET * 3),
-                    width=TAB_HIGHLIGHT_WIDTH
-                )
-                for event in self.events:
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        # Check if user presses the mouse button
-                        if event.button == 1:
-                            # Load settings
-                            self.current_tab = name
-                            self.current_tile = 0
-
-                            self.current_object = helpers.get_tile_indexes(
-                                current_tab=self.current_tab)[0]
-                            self.tile_list = sprites.get_current_tab_sprites(
-                                tab_name=self.current_tab
-                            )
-                            self.tile_names = helpers.get_tile_names(
-                                current_tab=self.current_tab
-                            )
-                            self.tile_buttons = buttons.get_tile_buttons(
-                                tab_names=self.tab_names,
-                                current_tab_name=self.current_tab
-                            )
-                            self.displaying_tabs = False
-
-            tabs += 1
-
-    def display_presets_previews(self) -> None:
-        """
-            Shows a preview of the first image in the displayed presets-folder next to its name.
-
-            Returns:
-                None
-        """
-        for i, name in enumerate(self.tab_names):
-            preview_img = pygame.transform.scale(
-                surface=sprites.get_preview_image(tab_name=name),
-                size=(PREVIEW_WIDTH,
-                      PREVIEW_HEIGHT))
-            self.screen.blit(source=preview_img,
-                             dest=(
-                                 PREVIEW_X,
-                                 PREVIEW_Y_OFFSET + i * TAB_NAME_Y_SPACING
-                             ))
+        self.current_object = helpers.get_tile_indexes(
+            current_tab=self.current_tab)[0]
+        self.tile_list = sprites.get_current_tab_sprites(
+            tab_name=self.current_tab
+        )
+        self.tile_names = helpers.get_tile_names(
+            current_tab=self.current_tab
+        )
+        self.tile_buttons = buttons.get_tile_buttons(
+            tab_names=self.tab_names,
+            current_tab_name=self.current_tab
+        )
+        self.displaying_tabs = False
 
     def draw_and_select_tile(self) -> None:
         """
@@ -461,7 +425,7 @@ class Editor:
             self.keys = pygame.key.get_pressed()
             self.manage_quitting()
 
-            pygame.display.set_caption(f"Editing: {self.map_name}")
+            pygame.display.set_caption(f"Editing: {self.map_name} @ {int(self.clock.get_fps())} fps")
 
             # Layout
             self.screen.fill((89, 160, 205))
@@ -478,22 +442,32 @@ class Editor:
             self.draw_right_panel()
 
             self.draw_sets_button()
+
             if self.displaying_tabs:
-                self.draw_tab_names()
-                self.display_presets_previews()
+                self.menus.draw_presets_menu()
+                self.menus.display_presets_previews()
+                selected_preset = self.menus.highlight_selected_preset()
+                if selected_preset is not None:
+                    self.load_new_preset(selected_preset=selected_preset)
 
             self.draw_utility_buttons()
 
             if self.is_changing_name:
                 self.screen.fill(DARK_ORANGE)
-                drawing.draw_change_name_text(screen=self.screen,
-                                              map_name=self.temp_map_name,
-                                              font=self.change_name_font)
+                self.menus.draw_rename_menu()
                 self.get_map_name_input()
 
             elif self.is_loading_map:
                 self.screen.fill(DARK_ORANGE)
-                drawing.draw_and_load_saved_maps_text(editor=self)
+                self.menus.draw_load_map_menu()
+                selected_map = self.menus.highlight_selected_map()
+                if selected_map is not None:
+                    map_attributes = helpers.deserialize_map_details(editor=self,
+                                                                     map_name=selected_map)
+                    helpers.update_class_dict(cls=self,
+                                              kwargs=map_attributes)
+
+                    time.sleep(0.1)  # to prevent placing tile
 
             elif self.is_building:
                 self.manage_scrolling()

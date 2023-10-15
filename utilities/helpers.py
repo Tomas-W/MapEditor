@@ -1,5 +1,5 @@
 import pickle
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict
 
 import pygame
 
@@ -26,8 +26,8 @@ def is_pickled(file_path: str) -> bool:
         return False
 
 
-def get_world_data(columns: int,
-                   rows: int) -> list[list[int]]:
+def get_fresh_world_data(columns: int,
+                         rows: int) -> list[list[int]]:
     """
         Gets a nested list containing object indexes or -1.
         Size depends on chosen number of columns and rows.
@@ -65,53 +65,90 @@ def save_map_details(editor: any) -> None:
                     file=pickle_out)
 
 
-def get_loaded_map_details(editor: any) -> list[int, int, int, int, list[list[int]]]:
+def get_loaded_map_details(editor: any,
+                           map_name: str) -> list[int, int, int, int, list[list[int]]]:
     """
         Loads map-dependent variables from a pickle file and deserializes it.
 
         Args:
             editor (any): Current Editor object.
+            map_name (str): Name of the map to load.
 
         Returns:
             list[int, int, int, int, list[list[int]]]: A list containing map-dependent variables.
     """
-    pickle_in = open(f"maps/{editor.map_name}",
+    pickle_in = open(os.path.join(MAPS_DIR, map_name),
                      mode="rb")
     load_data = pickle.load(pickle_in)
 
     return load_data
 
 
-def load_map_details(editor: any,
-                     map_name: str) -> None:
+def update_class_dict(cls: any,
+                      kwargs: dict):
     """
-        Deserialize a pickled map and load the settings into the current Editor.
+        Gets a dict containing instance attributes and
+            checks if exist within the class.
+        If all attributes exit, update __dict__,
+            else raise a KeyError.
+
+        Args:
+            cls (any): A Class to update its attributes.
+            kwargs (Dict): A dict containing attributes to update.
+    """
+    cls_dict = cls.__dict__
+    approved_dict = {}
+    for key, val in kwargs.items():
+        if key in cls_dict:
+            approved_dict[key] = val
+        else:
+            raise KeyError(f"{str(cls)} accepts no keyword {key}.")
+
+    cls.__dict__.update(approved_dict)
+
+
+def deserialize_map_details(editor: any,
+                            map_name: str) -> Dict:
+    """
+        Deserialize a pickled map and load the attributes into a dict.
 
         Args:
             editor (any): Current Editor object.
             map_name (str): Name of the map to deserialize.
 
         Returns:
-             None
+             Dict: Dictionary containing attributes to update a class instance.
     """
-    editor.scroll_x = 0
-    editor.scroll_y = 0
-    editor.world_data = []
-    editor.map_name = map_name
-    editor.temp_map_name = editor.map_name
+    load_data = get_loaded_map_details(editor=editor,
+                                       map_name=map_name)
 
-    load_data = get_loaded_map_details(editor=editor)
+    rows, columns, grid_size_x, grid_size_y, world_data = load_data
 
-    editor._rows, editor._columns, editor._grid_size_x, editor._grid_size_y, editor.world_data = load_data
+    background = pygame.transform.scale(surface=editor.background,
+                                        size=(
+                                            columns * grid_size_x,
+                                            rows * grid_size_y
+                                        ))
 
-    editor.background = pygame.transform.scale(surface=editor.background,
-                                               size=(
-                                                   editor._columns * editor._grid_size_x,
-                                                   editor._rows * editor._grid_size_y
-                                               ))
+    dict_updater = {
+        "scroll_x": 0,
+        "scroll_y":  0,
+        "map_name":  map_name,
+        "temp_map_name":  map_name,
 
-    editor.is_loading_map = False
-    editor.is_building = True
+        "_rows":  rows,
+        "_columns":  columns,
+        "_grid_size_x":  grid_size_x,
+        "_grid_size_y":  grid_size_y,
+
+        "world_data":  world_data,
+        "background":  background,
+
+        "is_loading_map":  False,
+        "is_building":  True,
+    }
+
+    return dict_updater
 
 
 def can_edit_tile(world_data: List[List[int]],
@@ -258,3 +295,10 @@ def get_minimap_dimensions(columns: int,
         scale_factor = scale_height
 
     return scale_factor, map_width * scale_factor, map_height * scale_factor
+
+
+def get_saved_map_names() -> List[str]:
+    return os.listdir(MAPS_DIR)
+
+def get_empty_list() -> List:
+    return []

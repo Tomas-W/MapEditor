@@ -11,17 +11,17 @@ background_img = pygame.transform.scale(
     (COLUMNS * GRID_SIZE_X, ROWS * GRID_SIZE_Y))
 
 sets_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/sets_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "sets_btn.png")).convert_alpha()
 save_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/save_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "save_btn.png")).convert_alpha()
 load_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/load_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "load_btn.png")).convert_alpha()
 back_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/back_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "back_btn.png")).convert_alpha()
 name_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/name_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "name_btn.png")).convert_alpha()
 ok_button_image = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/ok_btn.png")).convert_alpha()
+    os.path.join(IMAGES_DIR, "ok_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

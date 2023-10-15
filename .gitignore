@@ -20,7 +20,7 @@ __pycache__/
 
 # Ignore playgrounds
 playground/
-playground.py
+playground/playground.py
 
 # Ignore custom launcher
 run_editor.cmd

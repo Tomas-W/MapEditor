@@ -37,6 +37,9 @@ class Button:
         self.clicked = False
         self.tile_index = tile_index
 
+    def __str__(self):
+        return f"Button instance (index: {self.tile_index})"
+
     def draw(self,
              surface: pygame.Surface) -> bool:
         """
