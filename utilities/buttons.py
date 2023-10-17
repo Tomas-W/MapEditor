@@ -1,14 +1,11 @@
-from typing import List, Self, Union
+from typing import List, Self, Union, Dict
 
 import pygame
 
 from settings.paths import *
-from settings.bottom_panel import *
-from settings.minimap import *
-from settings.right_panel import *
+from settings.panels import *
 
-from utilities.sprites import save_button_image, load_button_image, back_button_image, \
-    name_button_image, ok_button_image, get_current_tab_sprites, sets_button_image
+from utilities.sprites import get_current_tab_sprites
 
 
 class Button:
@@ -37,26 +34,25 @@ class Button:
         self.clicked = False
         self.tile_index = tile_index
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Button instance (index: {self.tile_index})"
 
     def draw(self,
              surface: pygame.Surface) -> bool:
         """
-           Draw the button on screen.
+            Draws the button on screen.
+            Listens for mouse click and returns a bool conveying
+                if user clicked (mouse 1) on the Button.
 
-           Args:
-               surface (pygame.Surface): The surface to draw the button on.
+            Args:
+                surface (pygame.Surface): The surface to draw the button on.
 
-           Returns:
-               bool: True if the button was clicked, False otherwise.
+            Returns:
+                bool: True if the button was clicked, False otherwise.
         """
         action = False
-
-        # get mouse position
         pos = pygame.mouse.get_pos()
 
-        # check mouseover and clicked conditions
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
                 action = True
@@ -65,19 +61,16 @@ class Button:
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
 
-        # draw button
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
 
 
-def get_tile_buttons(tab_names: List[str],
-                     current_tab_name: str) -> List[Button]:
+def get_tile_buttons(current_tab_name: str) -> List[Button]:
     """
-       Get a list of tile buttons.
+       Get a list of tile buttons related to the current preset tab.
 
        Args:
-           tab_names (List[str]): List of tab names (preset folders).
            current_tab_name (str): The name of the current tab.
 
        Returns:
@@ -110,85 +103,23 @@ def get_tile_buttons(tab_names: List[str],
     return button_list
 
 
-def get_sets_button() -> Button:
+def get_utility_button(btn_dict: Dict[str, Dict[str, Button]],
+                       name: str,
+                       state: str,
+                       **kwargs) -> Button:
     """
-       Get the sets button.
+        Creates a Button instance based on a dict containing the Button's parameters.
+        Adds Button to active Editor instance to allow calculations.
 
-       Returns:
-           Button: The sets button.
-       """
-    return Button(x=SETS_BUTTON_X,
-                  y=SETS_BUTTON_Y,
-                  image=sets_button_image,
-                  scale=1,
-                  tile_index=None)
+        Args:
+             btn_dict (Dict): Editor attribute containing all utility Buttons.
+             name (str): Name of the Button used to save as key value in btn_dict.
+             state (str): Button type (inactive, selected, active).
+             **kwargs (Dict): Button parameters (x, y, image, scale, tile_index)
 
-
-def get_save_button() -> Button:
+        Returns:
+              A Button with kwargs attributes.
     """
-       Get the save button.
-
-       Returns:
-           Button: The save button.
-       """
-    return Button(x=SAVE_BUTTON_X_OFFSET,
-                  y=SAVE_BUTTON_Y_OFFSET,
-                  image=save_button_image,
-                  scale=1,
-                  tile_index=None)
-
-
-def get_load_button() -> Button:
-    """
-       Get the load button.
-
-       Returns:
-           Button: The load button.
-       """
-    return Button(x=LOAD_BUTTON_X_OFFSET,
-                  y=LOAD_BUTTON_Y_OFFSET,
-                  image=load_button_image,
-                  scale=1,
-                  tile_index=None)
-
-
-def get_name_button() -> Button:
-    """
-       Get the name button.
-
-       Returns:
-           Button: The name button.
-       """
-    return Button(x=NAME_BUTTON_X_OFFSET,
-                  y=NAME_BUTTON_Y_OFFSET,
-                  image=name_button_image,
-                  scale=1,
-                  tile_index=None)
-
-
-def get_back_button() -> Button:
-    """
-       Get the back button.
-
-       Returns:
-           Button: The back button.
-       """
-    return Button(x=(SCREEN_WIDTH + RIGHT_MARGIN) // 2 - back_button_image.get_width() * 1.5,
-                  y=BACK_BUTTON_Y_OFFSET_NAME_SCREEN,
-                  image=back_button_image,
-                  scale=1,
-                  tile_index=None)
-
-
-def get_ok_button() -> Button:
-    """
-       Get the ok button.
-
-       Returns:
-           Button: The ok button.
-       """
-    return Button(x=(SCREEN_WIDTH + RIGHT_MARGIN) // 2 + ok_button_image.get_width() // 2,
-                  y=BACK_BUTTON_Y_OFFSET_NAME_SCREEN,
-                  image=ok_button_image,
-                  scale=1,
-                  tile_index=None)
+    util_button = Button(**kwargs)
+    btn_dict[name] = {state: util_button}
+    return util_button

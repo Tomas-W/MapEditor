@@ -1,27 +1,45 @@
-import pygame
 from typing import List, Dict
+
+import pygame
 
 from settings.setup import *
 from settings.paths import *
 
-sky_img = pygame.image.load(
-    os.path.join(EDITOR_DIR, "images/clouds.png")).convert()
+
+# General
+sky_img = pygame.image.load(os.path.join(IMAGES_DIR,
+                                         "clouds.png")).convert()
+
 background_img = pygame.transform.scale(
-    pygame.image.load(os.path.join(EDITOR_DIR, "images/grass.png")).convert(),
+    pygame.image.load(os.path.join(IMAGES_DIR, "grass.png")).convert(),
     (COLUMNS * GRID_SIZE_X, ROWS * GRID_SIZE_Y))
 
-sets_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "sets_btn.png")).convert_alpha()
-save_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "save_btn.png")).convert_alpha()
-load_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "load_btn.png")).convert_alpha()
-back_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "back_btn.png")).convert_alpha()
-name_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "name_btn.png")).convert_alpha()
-ok_button_image = pygame.image.load(
-    os.path.join(IMAGES_DIR, "ok_btn.png")).convert_alpha()
+
+# Util buttons
+sets_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "sets_btn.png")).convert_alpha()
+
+save_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "save_btn.png")).convert_alpha()
+
+load_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "load_btn.png")).convert_alpha()
+
+load_button_active_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                          "load_btn_active.png")).convert_alpha()
+
+name_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "name_btn.png")).convert_alpha()
+
+pref_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "pref_btn.png")).convert_alpha()
+
+# Menu buttons
+back_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "back_btn.png")).convert_alpha()
+
+ok_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                 "ok_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

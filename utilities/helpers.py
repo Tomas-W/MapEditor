@@ -1,5 +1,7 @@
 import pickle
-from typing import List, Union, Tuple, Dict
+from collections import OrderedDict
+from typing import List, Union, Tuple, Dict, Any
+from typing import OrderedDict as OrderedDictType
 
 import pygame
 
@@ -27,7 +29,7 @@ def is_pickled(file_path: str) -> bool:
 
 
 def get_fresh_world_data(columns: int,
-                         rows: int) -> list[list[int]]:
+                         rows: int) -> List[List[int]]:
     """
         Gets a nested list containing object indexes or -1.
         Size depends on chosen number of columns and rows.
@@ -65,13 +67,11 @@ def save_map_details(editor: any) -> None:
                     file=pickle_out)
 
 
-def get_loaded_map_details(editor: any,
-                           map_name: str) -> list[int, int, int, int, list[list[int]]]:
+def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, List[List[int]]]:
     """
         Loads map-dependent variables from a pickle file and deserializes it.
 
         Args:
-            editor (any): Current Editor object.
             map_name (str): Name of the map to load.
 
         Returns:
@@ -85,7 +85,7 @@ def get_loaded_map_details(editor: any,
 
 
 def update_class_dict(cls: any,
-                      kwargs: dict):
+                      attributes: dict):
     """
         Gets a dict containing instance attributes and
             checks if exist within the class.
@@ -94,11 +94,11 @@ def update_class_dict(cls: any,
 
         Args:
             cls (any): A Class to update its attributes.
-            kwargs (Dict): A dict containing attributes to update.
+            attributes (Dict): A dict containing attributes to update.
     """
     cls_dict = cls.__dict__
     approved_dict = {}
-    for key, val in kwargs.items():
+    for key, val in attributes.items():
         if key in cls_dict:
             approved_dict[key] = val
         else:
@@ -119,8 +119,7 @@ def deserialize_map_details(editor: any,
         Returns:
              Dict: Dictionary containing attributes to update a class instance.
     """
-    load_data = get_loaded_map_details(editor=editor,
-                                       map_name=map_name)
+    load_data = get_loaded_map_details(map_name=map_name)
 
     rows, columns, grid_size_x, grid_size_y, world_data = load_data
 
@@ -132,20 +131,20 @@ def deserialize_map_details(editor: any,
 
     dict_updater = {
         "scroll_x": 0,
-        "scroll_y":  0,
-        "map_name":  map_name,
-        "temp_map_name":  map_name,
+        "scroll_y": 0,
+        "map_name": map_name,
+        "temp_map_name": map_name,
 
-        "_rows":  rows,
-        "_columns":  columns,
-        "_grid_size_x":  grid_size_x,
-        "_grid_size_y":  grid_size_y,
+        "_rows": rows,
+        "_columns": columns,
+        "_grid_size_x": grid_size_x,
+        "_grid_size_y": grid_size_y,
 
-        "world_data":  world_data,
-        "background":  background,
+        "world_data": world_data,
+        "background": background,
 
-        "is_loading_map":  False,
-        "is_building":  True,
+        "is_loading_map": False,
+        "is_building": True,
     }
 
     return dict_updater
@@ -250,7 +249,7 @@ def get_tile_indexes(current_tab: str) -> List[int]:
          f.endswith(".png")])
 
 
-def get_enlarged_rect(rect: Union[tuple[int, int, int, int], pygame.Rect],
+def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
                       pixels: int) -> pygame.Rect:
     """
        Get a pygame.Rect object enlarged by x pixels on each side.
@@ -275,7 +274,7 @@ def get_enlarged_rect(rect: Union[tuple[int, int, int, int], pygame.Rect],
 def get_minimap_dimensions(columns: int,
                            rows: int,
                            grid_x: int,
-                           grid_y: int) -> tuple[float, float, float]:
+                           grid_y: int) -> Tuple[float, float, float]:
     """
        Get a tuple containing the dimensions of the minimap
        It is scaled to fit the minimap section on the Editor.
@@ -300,5 +299,35 @@ def get_minimap_dimensions(columns: int,
 def get_saved_map_names() -> List[str]:
     return os.listdir(MAPS_DIR)
 
+
 def get_empty_list() -> List:
     return []
+
+
+def get_empty_ordered_dict() -> OrderedDictType[str, int]:
+    return OrderedDict()
+
+
+def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
+    # noinspection PyProtectedMember
+    preferences_dict: OrderedDict[str, int] = OrderedDict([
+        ("_rows", editor._rows),
+        ("_columns", editor._columns),
+        ("_grid_size_x", editor._grid_size_x),
+        ("_grid_size_y", editor._grid_size_y)])
+    return preferences_dict
+
+
+def is_new_value_allowed(name: str,
+                         value: int) -> bool:
+    dict_ = GRID_PREFERENCES_DICT
+    return dict_[name]["min"] <= value <= dict_[name]["max"]
+
+
+def update_background(editor: any) -> pygame.Surface:
+    # noinspection PyProtectedMember
+    return pygame.transform.scale(surface=editor.background,
+                                  size=(
+                                      editor._columns * editor._grid_size_x,
+                                      editor._rows * editor._grid_size_y
+                                  ))

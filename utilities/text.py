@@ -1,35 +1,14 @@
-import time
-from typing import Union
+from typing import Union, Tuple
 
 import pygame
 
-from settings.canvas import *
-from settings.paths import *
 from settings.setup import *
-from utilities import helpers
-
-
-def draw_background(screen: pygame.Surface,
-                    background: pygame.Surface,
-                    scroll_x: int,
-                    scroll_y: int) -> None:
-    """
-        Blits the background image to the screen.
-
-        Args:
-            screen (pygame.Surface): Editor window.
-            background (pygame.Surface): Background image of the map.
-            scroll_x (int): X coordinate of background.topleft.
-            scroll_y (int): Y coordinate of background.topleft.
-    """
-    screen.blit(background,
-                (scroll_x, scroll_y))
 
 
 def draw_text(screen: pygame.Surface,
               text: str,
               font: pygame.font.Font,
-              color: tuple[int, int, int],
+              color: Tuple[int, int, int],
               x_pos: int,
               y_pos: int,
               get_rect: bool = False) -> Union[None, pygame.Rect]:
@@ -62,7 +41,7 @@ def draw_text(screen: pygame.Surface,
 def draw_text_centered_x(screen: pygame.Surface,
                          text: str,
                          font: pygame.font.Font,
-                         color: tuple[int, int, int],
+                         color: Tuple[int, int, int],
                          y_pos: int,
                          get_rect: bool = False):
     """

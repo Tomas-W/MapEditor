@@ -1,20 +1,40 @@
 FPS = 60
-BASE_SCROLL_SPEED = 5
-MAX_SCROLL_SPEED = 15
-CHANGE_NAME_TEXT = "Provide a name:"
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 BOTTOM_MARGIN = 150
 RIGHT_MARGIN = 300
 
-BUTTON_WIDTH = 64
-BUTTON_HEIGHT = 32
+BASE_SCROLL_SPEED = 5
+MAX_SCROLL_SPEED = 15
+CHANGE_NAME_TEXT = "Provide a name:"
 
 ROWS = 40
 COLUMNS = 40
 GRID_SIZE_X = 32
 GRID_SIZE_Y = 32
+
+GRID_PREFERENCES_DICT = {
+    "_rows": {
+        "min": 10,
+        "max": 200,
+    },
+    "_columns": {
+        "min": 10,
+        "max": 200,
+    },
+    "_grid_size_x": {
+        "min": 10,
+        "max": 70,
+    },
+    "_grid_size_y": {
+        "min": 10,
+        "max": 70,
+    },
+}
+
+BUTTON_WIDTH = 64
+BUTTON_HEIGHT = 32
 
 BROWN = (105, 70, 35)
 DARK_BROWN = (95, 78, 57)

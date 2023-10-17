@@ -1,10 +1,13 @@
 import pygame
 
-label_font = pygame.font.SysFont(name="Futura",
+FONT = "Futura"
+label_font = pygame.font.SysFont(name=FONT,
                                  size=22)
-tab_font = pygame.font.SysFont(name="Futura",
-                               size=32)  # linked with right_panel.py
-rename_map_font = pygame.font.SysFont(name="Futura",
+presets_font = pygame.font.SysFont(name=FONT,
+                                   size=32)  # linked with panels.py
+rename_map_font = pygame.font.SysFont(name=FONT,
                                       size=40)
-load_map_font = pygame.font.SysFont(name="Futura",
-                                     size=40)
+load_map_font = pygame.font.SysFont(name=FONT,
+                                    size=40)
+preferences_font = pygame.font.SysFont(name=FONT,
+                                       size=40)
