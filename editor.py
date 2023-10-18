@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Self
 
 import pygame
 pygame.init()
@@ -15,18 +15,20 @@ screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
 
 from menus import Menu
+from error_handler import ErrorHandler
 
 from settings.buttons import *
 
 import utilities.buttons as buttons
 import utilities.fonts as fonts
+import utilities.general as general
 import utilities.helpers as helpers
 import utilities.sprites as sprites
 import utilities.text as text
 
 
 class Editor:
-    def __init__(self) -> None:
+    def __init__(self) -> Self:
         self.clock: pygame.time.Clock = pygame.time.Clock()
         self.screen: pygame.display = screen
         self.events: pygame.event = None
@@ -43,7 +45,7 @@ class Editor:
         self._grid_size_x = GRID_SIZE_X
         self._grid_size_y = GRID_SIZE_Y
         # self.preferences_dict: Dict[str, int] = helpers.get_preferences_dict(editor=self)
-        self.world_data: List[List[int]] = helpers.get_fresh_world_data(
+        self.world_data: List[List[int]] = general.get_fresh_world_data(
             columns=self._columns,
             rows=self._rows
         )
@@ -69,27 +71,24 @@ class Editor:
         self.selected_preference_value_change = ROWS
 
         # Presets
-        self.tile_start_y: int = 0
-        self.preset_names: List[str] = helpers.get_preset_dir_names()
-        self.shortened_preset_names: List[str] = helpers.get_shortened_dir_names()
+        self.preset_names: List[str] = general.get_preset_dir_names()
+        self.shortened_preset_names: List[str] = general.get_shortened_dir_names()
         self.current_preset: str = self.preset_names[0]
         self.displaying_presets = False
 
         # Tiles
-        self.level_objects: List[pygame.Surface] = sprites.get_all_level_objects(
-            folder_path=PRESET_DIR
+        self.level_objects: List[pygame.Surface] = sprites.get_all_level_objects()
+        self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
+            preset_name=self.current_preset
         )
-        self.tile_list: List[pygame.Surface] = sprites.get_current_tab_sprites(
-            tab_name=self.current_preset
+        self.tile_names: List[str] = general.get_tile_names(
+            preset_name=self.current_preset
         )
-        self.tile_names: List[str] = helpers.get_tile_names(
-            current_tab=self.current_preset
-        )
-        self.tile_indexes: List[int] = helpers.get_tile_indexes(
-            current_tab=self.current_preset
+        self.tile_indexes: List[int] = general.get_tile_indexes(
+            preset_name=self.current_preset
         )
         self.tile_buttons: List[buttons.Button] = buttons.get_tile_buttons(
-            current_tab_name=self.current_preset
+            preset_name=self.current_preset
         )
         self.current_tile: int = 0
         self.current_object: int = self.tile_indexes[0]
@@ -132,6 +131,12 @@ class Editor:
         self.is_changing_name = False
         self.is_loading_map = False
         self.is_changing_preferences = False
+
+        # Prevent accidental clicks after switches
+        self.click_time = 0
+
+        # Errors
+        self.error_handler = ErrorHandler(editor=self)
 
         self.test = 100
 
@@ -257,16 +262,17 @@ class Editor:
         self.current_preset = selected_preset
         self.current_tile = 0
 
-        self.current_object = helpers.get_tile_indexes(
-            current_tab=self.current_preset)[0]
-        self.tile_list = sprites.get_current_tab_sprites(
-            tab_name=self.current_preset
+        self.current_object = general.get_tile_indexes(
+            preset_name=self.current_preset)[0]
+        self.tile_list = sprites.get_preset_sprites(
+            preset_name=self.current_preset
         )
-        self.tile_names = helpers.get_tile_names(
-            current_tab=self.current_preset
+        self.tile_names = general.get_tile_names(
+            preset_name=self.current_preset
         )
+        print(self.tile_names)
         self.tile_buttons = buttons.get_tile_buttons(
-            current_tab_name=self.current_preset
+            preset_name=self.current_preset
         )
         self.displaying_presets = False
 
@@ -284,12 +290,12 @@ class Editor:
             Draws label above the tile on the side panel.
         """
         for tile, text_ in zip(self.tile_buttons, self.tile_names):
-            text.draw_text(screen=self.screen,
-                           text=str(text_),
-                           font=fonts.label_font,
-                           color=TILE_LABEL_COLOR,
-                           x_pos=tile.rect.topleft[0],
-                           y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
+            text.draw(screen=self.screen,
+                      text=str(text_),
+                      font=fonts.label_font,
+                      color=TILE_LABEL_COLOR,
+                      x_pos=tile.rect.topleft[0],
+                      y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
 
     def highlight_selected_tile(self) -> None:
         """
@@ -317,18 +323,18 @@ class Editor:
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
             if pygame.mouse.get_pressed()[0] == 1:
                 # Add new tile if within map bounds
-                if helpers.can_edit_tile(world_data=self.world_data,
-                                         current_index=self.current_tile,
-                                         grid_x=x,
-                                         grid_y=y):
+                if general.can_place_tile(world_data=self.world_data,
+                                          current_index=self.current_tile,
+                                          grid_x=x,
+                                          grid_y=y):
                     self.world_data[y][x] = self.current_object
 
             if pygame.mouse.get_pressed()[2] == 1:
                 # Remove tile if within bounds
-                if helpers.can_edit_tile(world_data=self.world_data,
-                                         current_index=self.current_tile,
-                                         grid_x=x,
-                                         grid_y=y):
+                if general.can_remove_tile(world_data=self.world_data,
+                                          current_index=self.current_tile,
+                                          grid_x=x,
+                                          grid_y=y):
                     self.world_data[y][x] = -1
 
     def draw_bottom_panel(self) -> None:
@@ -384,7 +390,7 @@ class Editor:
                     self.selected_preference_value_change = str(self.selected_preference_value_change)[:-1]
 
                 elif events.key in range(pygame.K_0, pygame.K_9 + 1):
-                    self.selected_preference_value_change = str(self.selected_preference_value_change + events.unicode)
+                    self.selected_preference_value_change = str(self.selected_preference_value_change) + events.unicode
 
     def draw_preference_buttons(self) -> None:
         # Do not save value and go back
@@ -394,7 +400,7 @@ class Editor:
 
         # Save new value
         if self.ok_button.draw(self.screen):
-            if helpers.is_new_value_allowed(name=self.selected_preference_name,
+            if general.is_new_value_allowed(name=self.selected_preference_name,
                                             value=int(self.selected_preference_value_change)):
                 print(
                     f"{self.selected_preference_name} changed from {self.selected_preference_value} to {self.selected_preference_value_change}")
@@ -470,10 +476,7 @@ class Editor:
                                            width=MINIMAP_OUTLINE_WIDTH)
 
         scale_factor, minimap_view_width, minimap_view_height = helpers.get_minimap_dimensions(
-            columns=self._columns,
-            rows=self._rows,
-            grid_x=self._grid_size_x,
-            grid_y=self._grid_size_y
+            editor=self
         )
 
         map_outline = pygame.draw.rect(surface=self.screen,
@@ -516,9 +519,15 @@ class Editor:
                                  scroll_x=self.scroll_x,
                                  scroll_y=self.scroll_y)
 
+            # Canvas
             self.draw_grid()
             self.draw_world()
 
+            # Errors
+            self.error_handler.set_out_of_bounds_error()
+            self.error_handler.display_error_messages()
+
+            # Panels
             self.draw_minimap()
             self.draw_bottom_panel()
             self.draw_right_panel()
@@ -529,6 +538,7 @@ class Editor:
                 selected_preset = self.menus.highlight_selected_preset()
                 if selected_preset is not None:
                     self.load_new_preset(selected_preset=selected_preset)
+                    time.sleep(0.1)  # to prevent placing tile
 
             self.draw_utility_buttons()
 

@@ -2,6 +2,8 @@ from typing import List, Dict
 
 import pygame
 
+import utilities.general as general
+
 from settings.setup import *
 from settings.paths import *
 
@@ -74,32 +76,31 @@ def get_sprites(location: str,
     return sprites
 
 
-def get_preview_image(tab_name: str) -> pygame.Surface:
+def get_preview_image(preset_name: str) -> pygame.Surface:
     """
-        Gets the first image in the preset folders.
+        Gets the first image in the given preset folders.
 
         Args:
-            tab_name (str): Name of the current tab.
+            preset_name (str): Name of the given preset.
 
         Returns:
              pygame.Surface: Preview image.
     """
-    return get_current_tab_sprites(tab_name=tab_name)[0]
+    return get_preset_sprites(preset_name=preset_name)[0]
 
 
-def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
+def get_preset_sprites(preset_name: str) -> List[pygame.Surface]:
     """
-        Get a list of sprites for the current tab.
+        Get a list of sprites for the current preset.
 
         Args:
-            tab_name (str): Name of the current tab.
+            preset_name (str): Name of the current preset.
 
         Returns:
             List[pygame.Surface]: List of sprite images.
         """
-    path = os.path.join(EDITOR_DIR, "images/presets", tab_name)
-    sprite_names = [f for f in os.listdir(path) if
-                    f.endswith('.png') and os.path.isfile(os.path.join(path, f))]
+    path = os.path.join(PRESET_DIR, preset_name)
+    sprite_names = general.get_sorted_tile_names(preset_name=preset_name)
 
     sprite_list = []
     for sprite in sprite_names:
@@ -110,12 +111,9 @@ def get_current_tab_sprites(tab_name: str) -> List[pygame.Surface]:
     return sprite_list
 
 
-def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
+def get_all_level_objects() -> Dict[int, pygame.Surface]:
     """
         Get all level objects from a folder.
-
-        Args:
-            folder_path (str): Path to the folder containing level objects.
 
         Returns:
             dict: A dictionary with level objects indexed by number.
@@ -123,7 +121,7 @@ def get_all_level_objects(folder_path: str) -> Dict[int, pygame.Surface]:
     # Create a dictionary to store images by their index
     all_level_objects = {}
 
-    for subdir, _, files in os.walk(folder_path):
+    for subdir, _, files in os.walk(PRESET_DIR):
         for file in files:
             if file.endswith('.png'):
                 # Extract the number from the file name

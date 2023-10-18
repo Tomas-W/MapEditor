@@ -13,6 +13,7 @@ from settings.minimap import *
 
 import utilities.text as drawing
 import utilities.fonts as fonts
+import utilities.general as general
 import utilities.sprites as sprites
 import utilities.helpers as helpers
 
@@ -22,21 +23,25 @@ class Menu:
     editor: any
 
     preferences_dict: OrderedDict = field(
-        default_factory=helpers.get_empty_ordered_dict
+        default_factory=general.get_empty_ordered_dict
     )
     preferences_outline_recs: List[pygame.rect.Rect] = field(
-        default_factory=helpers.get_empty_list
+        default_factory=general.get_empty_list
     )
 
     saved_map_names: List[str] = field(
-        default_factory=helpers.get_saved_map_names)
+        default_factory=general.get_saved_map_names
+    )
     saved_maps_ouline_rects: List[pygame.rect.Rect] = field(
-        default_factory=helpers.get_empty_list)
+        default_factory=general.get_empty_list
+    )
 
     preset_names: List[str] = field(
-        default_factory=helpers.get_preset_dir_names)
-    preset_name_rects_outlines: List[pygame.rect.Rect] = field(
-        default_factory=helpers.get_empty_list)
+        default_factory=general.get_preset_dir_names
+    )
+    preset_names_outline_rects: List[pygame.rect.Rect] = field(
+        default_factory=general.get_empty_list
+    )
 
     def draw_preferences_menu(self) -> None:
         """
@@ -52,13 +57,13 @@ class Menu:
         preferences_outline_recs = []
         # Preferences
         for i, (key, val) in enumerate(self.preferences_dict.items()):
-            preference = drawing.draw_text(screen=self.editor.screen,
-                                           text=str(key),
-                                           font=fonts.preferences_font,
-                                           color=PREFERENCES_HIGHLIGHT_WIDTH,
-                                           x_pos=PREFERENCES_X,
-                                           y_pos=i * PREFERENCES_Y_SPACING + PREFERENCES_Y,
-                                           get_rect=True)
+            preference = drawing.draw(screen=self.editor.screen,
+                                      text=str(key),
+                                      font=fonts.preferences_font,
+                                      color=PREFERENCES_HIGHLIGHT_WIDTH,
+                                      x_pos=PREFERENCES_X,
+                                      y_pos=i * PREFERENCES_Y_SPACING + PREFERENCES_Y,
+                                      get_rect=True)
 
             preference_rect = pygame.Rect(preference)
             preference_outline_rect = helpers.get_enlarged_rect(rect=preference_rect,
@@ -68,22 +73,22 @@ class Menu:
         self.preferences_outline_recs = preferences_outline_recs
 
         # Selected preference key
-        drawing.draw_text_centered_x(screen=self.editor.screen,
-                                     text=str(self.editor.selected_preference_name),
-                                     font=fonts.preferences_font,
-                                     color=WHITE,
-                                     y_pos=SELECTED_PREFERENCE_KEY_Y,
-                                     get_rect=False
-                                     )
+        drawing.draw_centered_x(screen=self.editor.screen,
+                                text=str(self.editor.selected_preference_name),
+                                font=fonts.preferences_font,
+                                color=WHITE,
+                                y_pos=SELECTED_PREFERENCE_KEY_Y,
+                                get_rect=False
+                                )
 
         # Selected preference vale
-        drawing.draw_text_centered_x(screen=self.editor.screen,
-                                     text=str(self.editor.selected_preference_value_change),
-                                     font=fonts.preferences_font,
-                                     color=WHITE,
-                                     y_pos=SELECTED_PREFERENCE_VAL_Y,
-                                     get_rect=False
-                                     )
+        drawing.draw_centered_x(screen=self.editor.screen,
+                                text=str(self.editor.selected_preference_value_change),
+                                font=fonts.preferences_font,
+                                color=WHITE,
+                                y_pos=SELECTED_PREFERENCE_VAL_Y,
+                                get_rect=False
+                                )
 
     def highlight_selected_preference(self) -> Union[None, Tuple[str, int]]:
         """
@@ -122,18 +127,18 @@ class Menu:
                None.
         """
         # Title
-        drawing.draw_text_centered_x(screen=self.editor.screen,
-                                     text=str(CHANGE_NAME_TEXT),
-                                     font=fonts.load_map_font,
-                                     y_pos=CHANGE_NAME_TITLE_Y,
-                                     color=CHANGE_NAME_TITLE_COLOR)
+        drawing.draw_centered_x(screen=self.editor.screen,
+                                text=str(CHANGE_NAME_TEXT),
+                                font=fonts.load_map_font,
+                                y_pos=CHANGE_NAME_TITLE_Y,
+                                color=CHANGE_NAME_TITLE_COLOR)
 
         # Name
-        drawing.draw_text_centered_x(screen=self.editor.screen,
-                                     text=str(self.editor.temp_map_name),
-                                     font=fonts.load_map_font,
-                                     y_pos=CHANGE_NAME_Y,
-                                     color=CHANGE_NAME_COLOR)
+        drawing.draw_centered_x(screen=self.editor.screen,
+                                text=str(self.editor.temp_map_name),
+                                font=fonts.load_map_font,
+                                y_pos=CHANGE_NAME_Y,
+                                color=CHANGE_NAME_COLOR)
 
     def draw_load_map_menu(self) -> None:
         """
@@ -147,18 +152,18 @@ class Menu:
            Returns:
                None.
         """
-        self.saved_map_names = helpers.get_saved_map_names()
+        self.saved_map_names = general.get_saved_map_names()
         saved_maps_ouline_rects = []
 
         # Draw map names
         for i, name in enumerate(self.saved_map_names):
-            saved_map_text = drawing.draw_text(screen=self.editor.screen,
-                                               text=str(name),
-                                               font=fonts.load_map_font,
-                                               color=SAVED_MAPS_COLOR,
-                                               x_pos=SAVED_MAPS_X,
-                                               y_pos=i * SAVED_MAPS_Y_SPACING + SAVED_MAPS_Y,
-                                               get_rect=True)
+            saved_map_text = drawing.draw(screen=self.editor.screen,
+                                          text=str(name),
+                                          font=fonts.load_map_font,
+                                          color=SAVED_MAPS_COLOR,
+                                          x_pos=SAVED_MAPS_X,
+                                          y_pos=i * SAVED_MAPS_Y_SPACING + SAVED_MAPS_Y,
+                                          get_rect=True)
 
             saved_map_rect = pygame.Rect(saved_map_text)
             selection_map_rect = helpers.get_enlarged_rect(rect=saved_map_rect,
@@ -206,20 +211,20 @@ class Menu:
         presets_rects_outlines = []
 
         for i, name in enumerate(self.preset_names):
-            text_pos = drawing.draw_text(screen=self.editor.screen,
-                                         text=str(name),
-                                         font=fonts.presets_font,
-                                         color=PRESETS_NAME_COLOR,
-                                         x_pos=PRESETS_NAME_X_OFFSET,
-                                         y_pos=PRESETS_NAME_Y_OFFSET + i * PRESETS_NAME_Y_SPACING,
-                                         get_rect=True)
+            text_pos = drawing.draw(screen=self.editor.screen,
+                                    text=str(name),
+                                    font=fonts.presets_font,
+                                    color=PRESETS_NAME_COLOR,
+                                    x_pos=PRESETS_NAME_X_OFFSET,
+                                    y_pos=PRESETS_NAME_Y_OFFSET + i * PRESETS_NAME_Y_SPACING,
+                                    get_rect=True)
 
             text_rect = pygame.rect.Rect(text_pos)
             text_rect[2] = SCREEN_WIDTH + RIGHT_MARGIN - text_rect[0]
 
             presets_rects_outlines.append(text_rect)
 
-        self.preset_name_rects_outlines = presets_rects_outlines
+        self.preset_names_outline_rects = presets_rects_outlines
 
     def highlight_selected_preset(self) -> Union[None, str]:
         """
@@ -232,7 +237,7 @@ class Menu:
            Returns:
                None.
         """
-        for i, outline_rect in enumerate(self.preset_name_rects_outlines):
+        for i, outline_rect in enumerate(self.preset_names_outline_rects):
             if outline_rect.collidepoint(self.editor.mouse_pos):
                 pygame.draw.rect(
                     surface=self.editor.screen,
@@ -243,6 +248,7 @@ class Menu:
                           outline_rect[3] + PRESETS_HIGHLIGHT_BOTTOM_OFFSET * 3),
                     width=PRESETS_HIGHLIGHT_WIDTH
                 )
+
                 if pygame.mouse.get_pressed()[0] == 1:
                     return self.preset_names[i]
 
@@ -257,7 +263,7 @@ class Menu:
         """
         for i, name in enumerate(self.preset_names):
             preview_img = pygame.transform.scale(
-                surface=sprites.get_preview_image(tab_name=name),
+                surface=sprites.get_preview_image(preset_name=name),
                 size=(PREVIEW_WIDTH,
                       PREVIEW_HEIGHT))
             self.editor.screen.blit(source=preview_img,

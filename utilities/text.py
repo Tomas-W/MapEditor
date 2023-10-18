@@ -5,13 +5,13 @@ import pygame
 from settings.setup import *
 
 
-def draw_text(screen: pygame.Surface,
-              text: str,
-              font: pygame.font.Font,
-              color: Tuple[int, int, int],
-              x_pos: int,
-              y_pos: int,
-              get_rect: bool = False) -> Union[None, pygame.Rect]:
+def draw(screen: pygame.Surface,
+         text: str,
+         font: pygame.font.Font,
+         color: Tuple[int, int, int],
+         x_pos: int,
+         y_pos: int,
+         get_rect: bool = False) -> Union[None, pygame.Rect]:
     """
        Generic function to draw text on screen.
 
@@ -38,12 +38,12 @@ def draw_text(screen: pygame.Surface,
         return x_pos, y_pos, rect[2], rect[3]
 
 
-def draw_text_centered_x(screen: pygame.Surface,
-                         text: str,
-                         font: pygame.font.Font,
-                         color: Tuple[int, int, int],
-                         y_pos: int,
-                         get_rect: bool = False):
+def draw_centered_x(screen: pygame.Surface,
+                    text: str,
+                    font: pygame.font.Font,
+                    color: Tuple[int, int, int],
+                    y_pos: int,
+                    get_rect: bool = False):
     """
        Generic function to draw text on center of x-axis of screen.
 

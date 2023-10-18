@@ -1,47 +1,11 @@
 import pickle
 from collections import OrderedDict
 from typing import List, Union, Tuple, Dict, Any
-from typing import OrderedDict as OrderedDictType
 
 import pygame
 
 from settings.paths import *
-from settings.minimap import *
-
-
-def is_pickled(file_path: str) -> bool:
-    """
-        Check if a file is pickled.
-
-        Args:
-            file_path (str): Path to the file.
-
-        Returns:
-            bool: True if the file is pickled, False otherwise.
-        """
-    try:
-        with open(file_path, "rb") as file:
-            pickle.load(file)
-        return True
-
-    except (pickle.UnpicklingError, EOFError, FileNotFoundError):
-        return False
-
-
-def get_fresh_world_data(columns: int,
-                         rows: int) -> List[List[int]]:
-    """
-        Gets a nested list containing object indexes or -1.
-        Size depends on chosen number of columns and rows.
-
-        Args:
-            columns (int): Number of columns.
-            rows (int): Number of rows.
-
-        Returns:
-            List[List[int]]: Nested list containing object indexes.
-    """
-    return [[-1] * columns for _ in range(rows)]
+from settings.setup import *
 
 
 def save_map_details(editor: any) -> None:
@@ -150,31 +114,6 @@ def deserialize_map_details(editor: any,
     return dict_updater
 
 
-def can_edit_tile(world_data: List[List[int]],
-                  current_index: int,
-                  grid_x: int,
-                  grid_y: int) -> bool:
-    """
-        Checks if the current mouse position is within the maps boundaries.
-        Mouse position is expressed in grid units, not actual coordinates.
-        Returns True if it is, else False.
-
-        Args:
-            current_index (int): Index of the selected tile.
-            world_data (List[List[int]]: Nested list containing all map objects.
-            grid_x (int): Current mouse x position expressed in grid units.
-            grid_y (int): Current mouse y position expressed in grid units.
-
-        Returns:
-            True if x and y are in world data, else False.
-    """
-    if 0 <= grid_y < len(world_data) and 0 <= grid_x < len(world_data[grid_y]):
-        if world_data[grid_y][grid_x] != current_index:
-            return True
-    else:
-        return False
-
-
 def may_place_tile(mouse_pos: Tuple[int, int],
                    background: pygame.Surface,
                    world_object: int,
@@ -191,62 +130,28 @@ def may_remove_tile(mouse_pos: Tuple[int, int],
         return background.get_rect().collidepoint(mouse_pos)
 
 
-def get_preset_dir_names() -> List[str]:
+def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
     """
-       Get a list of folders in the 'presets' folder.
+       Get a tuple containing the dimensions of the minimap
+       It is scaled to fit the minimap section on the Editor.
 
        Returns:
-           List[str]: List of names of folders in 'presets' folder.
-       """
-    return sorted([f.name for f in os.scandir(PRESET_DIR) if f.is_dir()])
-
-
-def get_shortened_dir_names() -> List[str]:
+           tuple[float, float]: minimap size.
     """
-       Get a list of folders in the 'presets' folder and returns a list where
-        the names have been capped to 15 and have trailing '..'
+    # noinspection PyProtectedMember
+    map_width = editor._columns * editor._grid_size_x
+    # noinspection PyProtectedMember
+    map_height = editor._rows * editor._grid_size_y
 
-       Returns:
-           List[str]: List of names of shortened folders in 'presets' folder.
-       """
-    names = get_preset_dir_names()
+    scale_width = RIGHT_MARGIN / map_width
+    scale_height = BOTTOM_MARGIN / map_height
 
-    for i, name in enumerate(names):
-        if len(name) > 15:
-            names[i] = name[:14] + ".."
+    if scale_width < scale_height:
+        scale_factor = scale_width
+    else:
+        scale_factor = scale_height
 
-    return names
-
-
-def get_tile_names(current_tab: str) -> List[str]:
-    """
-       Get a list of tile names for the current tab by
-        checking the file name.
-
-       Args:
-           current_tab (str): The name of the current tabs tiles.
-
-       Returns:
-           List[str]: List of tile names.
-       """
-    return [f.split(".")[0].split("_")[-1] for f in
-            os.listdir(os.path.join(PRESET_DIR, current_tab))
-            if f.endswith(".png")]
-
-
-def get_tile_indexes(current_tab: str) -> List[int]:
-    """
-       Get a sorted list of tile indexes for the current tabs tiles.
-
-       Args:
-           current_tab (str): The name of the current tab.
-
-       Returns:
-           List[int]: Sorted list of tile indexes.
-       """
-    return sorted(
-        [int(f.split("_")[0]) for f in os.listdir(os.path.join(PRESET_DIR, current_tab)) if
-         f.endswith(".png")])
+    return scale_factor, map_width * scale_factor, map_height * scale_factor
 
 
 def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
@@ -271,43 +176,6 @@ def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
     return larger_rect
 
 
-def get_minimap_dimensions(columns: int,
-                           rows: int,
-                           grid_x: int,
-                           grid_y: int) -> Tuple[float, float, float]:
-    """
-       Get a tuple containing the dimensions of the minimap
-       It is scaled to fit the minimap section on the Editor.
-
-       Returns:
-           tuple[float, float]: minimap size.
-    """
-    map_width = columns * grid_x
-    map_height = rows * grid_y
-
-    scale_width = RIGHT_MARGIN / map_width
-    scale_height = BOTTOM_MARGIN / map_height
-
-    if scale_width < scale_height:
-        scale_factor = scale_width
-    else:
-        scale_factor = scale_height
-
-    return scale_factor, map_width * scale_factor, map_height * scale_factor
-
-
-def get_saved_map_names() -> List[str]:
-    return os.listdir(MAPS_DIR)
-
-
-def get_empty_list() -> List:
-    return []
-
-
-def get_empty_ordered_dict() -> OrderedDictType[str, int]:
-    return OrderedDict()
-
-
 def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
     # noinspection PyProtectedMember
     preferences_dict: OrderedDict[str, int] = OrderedDict([
@@ -316,12 +184,6 @@ def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
         ("_grid_size_x", editor._grid_size_x),
         ("_grid_size_y", editor._grid_size_y)])
     return preferences_dict
-
-
-def is_new_value_allowed(name: str,
-                         value: int) -> bool:
-    dict_ = GRID_PREFERENCES_DICT
-    return dict_[name]["min"] <= value <= dict_[name]["max"]
 
 
 def update_background(editor: any) -> pygame.Surface:

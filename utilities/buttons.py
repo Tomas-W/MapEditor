@@ -5,7 +5,7 @@ import pygame
 from settings.paths import *
 from settings.panels import *
 
-from utilities.sprites import get_current_tab_sprites
+from utilities.sprites import get_preset_sprites
 
 
 class Button:
@@ -66,12 +66,12 @@ class Button:
         return action
 
 
-def get_tile_buttons(current_tab_name: str) -> List[Button]:
+def get_tile_buttons(preset_name: str) -> List[Button]:
     """
-       Get a list of tile buttons related to the current preset tab.
+       Get a list of tile buttons related to the preset.
 
        Args:
-           current_tab_name (str): The name of the current tab.
+           preset_name (str): Name of the preset.
 
        Returns:
            List[Button]: A list of tile buttons.
@@ -81,10 +81,10 @@ def get_tile_buttons(current_tab_name: str) -> List[Button]:
     button_row = 0
 
     # Get tiles corresponding to the current tab
-    tile_list_ = get_current_tab_sprites(tab_name=current_tab_name)
+    tile_list_ = get_preset_sprites(preset_name=preset_name)
     # Get their indexes for tile-map
     index_list = sorted([int(f.split("_")[0]) for f in
-                         os.listdir(os.path.join(PRESET_DIR, current_tab_name)) if
+                         os.listdir(os.path.join(PRESET_DIR, preset_name)) if
                          f.endswith('.png')])
 
     # Create and append all tile buttons
