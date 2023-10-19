@@ -114,20 +114,39 @@ def deserialize_map_details(editor: any,
     return dict_updater
 
 
-def may_place_tile(mouse_pos: Tuple[int, int],
-                   background: pygame.Surface,
-                   world_object: int,
-                   current_object: int) -> bool:
-    if world_object != current_object:
-        return background.get_rect().collidepoint(mouse_pos)
+def can_place_tile(editor: any,
+                   grid_x: int,
+                   grid_y: int) -> bool:
+    # noinspection PyProtectedMember
+    if grid_x < 0 or grid_y < 0:
+        return False
+    if grid_x >= editor._columns or grid_y >= editor._rows:
+        return False
+
+    return True
 
 
-def may_remove_tile(mouse_pos: Tuple[int, int],
-                    background: pygame.Surface,
-                    world_object: int,
-                    current_object: int) -> bool:
-    if world_object == current_object:
-        return background.get_rect().collidepoint(mouse_pos)
+def can_remove_tile(editor: any,
+                    grid_x: int,
+                    grid_y: int) -> bool:
+    """
+        Checks if the current mouse position is within the maps boundaries.
+        Mouse position is expressed in grid units, not actual coordinates.
+        Returns True if it is, else False.
+
+        Args:
+            editor (any): Current Editor instance.
+            grid_x (int): Current mouse x position expressed in grid units.
+            grid_y (int): Current mouse y position expressed in grid units.
+
+        Returns:
+            True if x and y are in world data, else False.
+    """
+    if 0 <= grid_y < len(editor.world_data) and 0 <= grid_x < len(
+            editor.world_data[grid_y]):
+        return True
+    else:
+        return False
 
 
 def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:

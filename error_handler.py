@@ -36,6 +36,12 @@ class ErrorHandler:
         self.set_tile_error()
 
     def reset_errors(self) -> None:
+        """
+            Resets all error messages to None.
+
+            Returns:
+                None.
+        """
         self.error_messages: List[str] = []
 
         self.row_errors = None
@@ -45,6 +51,13 @@ class ErrorHandler:
         self.set_tile_error()
 
     def set_preset_error(self) -> None:
+        """
+            Sets preset error message if more presets are loaded than can be drawn.
+            If no error, message is set to None.
+
+            Returns:
+            None.
+        """
         if len(self.editor.preset_names) > MAX_NR_PRESETS:
             self.error_messages["preset"] = MAX_PRESETS_ERROR
 
@@ -52,6 +65,13 @@ class ErrorHandler:
             self.error_messages["preset"] = None
 
     def set_tile_error(self) -> None:
+        """
+            Sets tile error message if more tiles are loaded than can be drawn.
+            If no error, message is set to None.
+
+            Returns:
+            None.
+        """
         if len(self.editor.tile_names) > MAX_NR_TILES:
             self.error_messages["tile"] = MAX_TILES_ERROR
 
@@ -59,18 +79,28 @@ class ErrorHandler:
             self.error_messages["tile"] = None
 
     def set_out_of_bounds_error(self):
+        """
+            Sets out_of_bounds error message if tiles are places outside of the current grid.
+            If no error, message is set to None.
+
+            Returns:
+            None.
+        """
         row_errors = 0
         col_errors = 0
         world_data: List[List[int]] = self.editor.world_data
         # check rows
+        # noinspection PyProtectedMember
         if len(world_data) > self.editor._rows:
             # more world data rows than grid rows
+            # noinspection PyProtectedMember
             for row in world_data[self.editor._rows:]:
                 for tile in row:
                     if tile != -1:
                         row_errors += 1
-
+        # noinspection PyProtectedMember
         if len(world_data[0]) > self.editor._columns:
+            # noinspection PyProtectedMember
             col_iterator = range(self.editor._columns, len(world_data[0]))
             for row in world_data:
                 for i in col_iterator:
@@ -86,6 +116,13 @@ class ErrorHandler:
             self.error_messages["grid"] = None
 
     def display_error_messages(self) -> None:
+        """
+            Loops over self.error_messages and displays them in order on the screen
+                if message is not None.
+
+            Returns:
+                 None.
+        """
         error_messages = [val for (key, val) in self.error_messages.items() if val is not None]
 
         for i, error in enumerate(error_messages):

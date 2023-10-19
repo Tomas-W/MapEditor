@@ -89,8 +89,8 @@ def get_tile_buttons(preset_name: str) -> List[Button]:
 
     # Create and append all tile buttons
     for i in range(len(tile_list_)):
-        tile_button = Button(x=SCREEN_WIDTH + (85 * button_col + 50),
-                             y=80 * button_row + TILE_START_Y,
+        tile_button = Button(x=SCREEN_WIDTH + (TILE_X_SPACING * button_col + TILE_X),
+                             y=TILE_Y_OFFSET * button_row + TILE_START_Y,
                              image=tile_list_[i],
                              scale=1,
                              tile_index=index_list[i])

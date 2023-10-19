@@ -2,6 +2,7 @@ import time
 from typing import List, Self
 
 import pygame
+
 pygame.init()
 
 from settings.setup import *
@@ -131,6 +132,9 @@ class Editor:
         self.is_changing_name = False
         self.is_loading_map = False
         self.is_changing_preferences = False
+
+        # Display
+        self.show_grid = True
 
         # Prevent accidental clicks after switches
         self.click_time = 0
@@ -323,18 +327,16 @@ class Editor:
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
             if pygame.mouse.get_pressed()[0] == 1:
                 # Add new tile if within map bounds
-                if general.can_place_tile(world_data=self.world_data,
-                                          current_index=self.current_tile,
+                if helpers.can_place_tile(editor=self,
                                           grid_x=x,
                                           grid_y=y):
                     self.world_data[y][x] = self.current_object
 
             if pygame.mouse.get_pressed()[2] == 1:
                 # Remove tile if within bounds
-                if general.can_remove_tile(world_data=self.world_data,
-                                          current_index=self.current_tile,
-                                          grid_x=x,
-                                          grid_y=y):
+                if helpers.can_remove_tile(editor=self,
+                                           grid_x=x,
+                                           grid_y=y):
                     self.world_data[y][x] = -1
 
     def draw_bottom_panel(self) -> None:
@@ -387,10 +389,12 @@ class Editor:
             if events.type == pygame.KEYDOWN:
                 if events.key == pygame.K_BACKSPACE:
                     # Delete last character
-                    self.selected_preference_value_change = str(self.selected_preference_value_change)[:-1]
+                    self.selected_preference_value_change = str(
+                        self.selected_preference_value_change)[:-1]
 
                 elif events.key in range(pygame.K_0, pygame.K_9 + 1):
-                    self.selected_preference_value_change = str(self.selected_preference_value_change) + events.unicode
+                    self.selected_preference_value_change = str(
+                        self.selected_preference_value_change) + events.unicode
 
     def draw_preference_buttons(self) -> None:
         # Do not save value and go back
@@ -520,7 +524,8 @@ class Editor:
                                  scroll_y=self.scroll_y)
 
             # Canvas
-            self.draw_grid()
+            if self.show_grid:
+                self.draw_grid()
             self.draw_world()
 
             # Errors
