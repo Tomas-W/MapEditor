@@ -40,6 +40,7 @@ class Editor:
         self.temp_map_name: str = self.map_name
         self.sky = sprites.sky_img
         self.background = sprites.background_img
+        self.og_background_size = self.background.get_size()
 
         self._rows = ROWS
         self._columns = COLUMNS
@@ -77,7 +78,7 @@ class Editor:
         self.displaying_presets = False
 
         # Tiles
-        self.level_objects: List[pygame.Surface] = sprites.get_all_level_objects()
+        self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
         self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
             preset_name=self.current_preset
         )
@@ -112,6 +113,8 @@ class Editor:
                                                     **OK_BTN)
         self.grid_button = buttons.get_utility_button(editor=self,
                                                       **GRID_BTN)
+        self.map_button = buttons.get_utility_button(editor=self,
+                                                     **MAP_BTN)
 
         # States
         self.is_running = True
@@ -120,11 +123,11 @@ class Editor:
         self.is_loading_map = False
         self.is_changing_preferences = False
 
-        # Display
+        # Quick menu
         self.show_grid = True
-
-        # Prevent accidental clicks after switches
-        self.click_time = 0
+        self.scale_width = 1
+        self.scale_height = 1
+        self.show_map_overview = False
 
         # Errors
         self.error_handler = ErrorHandler(editor=self)
@@ -219,7 +222,7 @@ class Editor:
                              start_pos=(y * self._grid_size_x + self.scroll_x, 0),
                              end_pos=(y * self._grid_size_x + self.scroll_x, SCREEN_HEIGHT))
 
-    def draw_world(self) -> None:
+    def draw_map(self) -> None:
         """
             Loops over self.world_data and draws all objects.
         """
@@ -229,6 +232,56 @@ class Editor:
                     self.screen.blit(source=self.level_objects[tile],
                                      dest=(y * self._grid_size_x + self.scroll_x,
                                            x * self._grid_size_x + self.scroll_y))
+
+    def set_overview_scale(self) -> None:
+        """
+            Calculate size difference between view area and map.
+            Applies scaling to necessary settings.
+        """
+        # noinspection PyProtectedMember
+        map_width = self._columns * self._grid_size_x
+        # noinspection PyProtectedMember
+        map_height = self._rows * self._grid_size_y
+
+        self.scale_width = SCREEN_WIDTH / map_width
+        self.scale_height = SCREEN_HEIGHT / map_height
+
+        self._grid_size_x = GRID_SIZE_X * self.scale_width
+        self._grid_size_y = GRID_SIZE_Y * self.scale_height
+
+        self.background = pygame.transform.scale(surface=self.background,
+                                                 size=(self.background.get_width() * self.scale_width,
+                                                       self.background.get_height() * self.scale_height))
+
+    def reset_scale(self) -> None:
+        """
+            Resets all settings applied through set_overview_scale so
+                regular building view is restored.
+        """
+        self.scale_width = 1
+        self.scale_height = 1
+
+        self._grid_size_x = GRID_SIZE_X
+        self._grid_size_y = GRID_SIZE_Y
+
+        self.background = pygame.transform.scale(surface=self.background,
+                                                 size=self.og_background_size)
+
+    def draw_map_overview(self) -> None:
+        """
+            Loops over self.world_data and draws all objects.
+        """
+        for x, row in enumerate(self.world_data):
+            for y, tile in enumerate(row):
+                if tile > -1:
+                    img = pygame.transform.scale(self.level_objects[tile],
+                                                 (int(self.scale_width * self.level_objects[
+                                                     tile].get_width()),
+                                                  int(self.scale_height * self.level_objects[
+                                                      tile].get_height())))
+                    self.screen.blit(source=img,
+                                     dest=(y * self._grid_size_x + self.scroll_x,
+                                           x * self._grid_size_y + self.scroll_y))
 
     def draw_right_panel(self) -> None:
         """
@@ -339,17 +392,22 @@ class Editor:
                                BOTTOM_MARGIN),
                          width=0)
 
-    def draw_utility_buttons(self) -> None:
+    def draw_preset_buttons(self) -> None:
         """
-            Blits utility buttons to the screen.
-                Sets (Presets of images)
-                Save (Save current map)
-                Load (Load saved map)
-                Name (Rename current map)
+            Blits preset buttons to the screen.
+                Sets (Display tle presets)
         """
         if self.sets_button.draw():
             self.displaying_presets = not self.displaying_presets
 
+    def draw_menu_buttons(self) -> None:
+        """
+            Blits menu buttons to the screen.
+                Save (Save current map)
+                Load (Load saved map)
+                Name (Rename current map)
+                Pref (Map preferences)
+        """
         if self.save_button.draw():
             helpers.save_map_details(editor=self)
 
@@ -364,9 +422,6 @@ class Editor:
         if self.pref_button.draw():
             self.is_building = False
             self.is_changing_preferences = True
-
-    def highlight_utility_buttons(self) -> None:
-        pass
 
     def get_preference_input(self) -> None:
         """
@@ -504,7 +559,7 @@ class Editor:
             pygame.display.set_caption(
                 f"Editing: {self.map_name} @ {int(self.clock.get_fps())} fps")
 
-            # Layout
+            # Background
             self.screen.fill((89, 160, 205))
             self.draw_background(background=self.background,
                                  scroll_x=self.scroll_x,
@@ -513,17 +568,19 @@ class Editor:
             # Canvas
             if self.show_grid:
                 self.draw_grid()
-            self.draw_world()
 
-            # Errors
-            self.error_handler.set_out_of_bounds_error()
-            self.error_handler.display_error_messages()
+            if self.show_map_overview:
+                self.draw_map_overview()
+            else:
+                self.draw_map()
 
             # Panels
             self.draw_minimap()
-            self.draw_bottom_panel()
             self.draw_right_panel()
+            self.draw_bottom_panel()
 
+            # Presets & Tiles
+            self.draw_preset_buttons()
             if self.displaying_presets:
                 self.menus.draw_presets_menu()
                 self.menus.display_presets_previews()
@@ -531,8 +588,20 @@ class Editor:
                 if selected_preset is not None:
                     self.load_new_preset(selected_preset=selected_preset)
 
-            self.draw_utility_buttons()
-            # Menu
+            # Quick menu
+            if self.grid_button.draw():
+                self.show_grid = not self.show_grid
+
+            if self.map_button.draw():
+                self.show_map_overview = not self.show_map_overview
+                if self.scale_height == 1:
+                    self.set_overview_scale()
+
+                else:
+                    self.reset_scale()
+
+            # Menus
+            self.draw_menu_buttons()
             if self.is_changing_name:
                 self.screen.fill(DARK_ORANGE)
                 self.menus.draw_rename_menu()
@@ -570,8 +639,9 @@ class Editor:
                     self.highlight_selected_tile()
                     self.place_and_remove_tiles()
 
-            if self.grid_button.draw():
-                self.show_grid = not self.show_grid
+            # Errors
+            self.error_handler.set_out_of_bounds_error()
+            self.error_handler.display_error_messages()
 
             pygame.display.update()
             self.clock.tick(FPS)

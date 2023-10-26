@@ -40,6 +40,8 @@ ok_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
 
 grid_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "grid_btn.png")).convert_alpha()
+map_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                  "map_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

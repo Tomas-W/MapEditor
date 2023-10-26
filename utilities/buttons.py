@@ -122,6 +122,7 @@ class UtilityButton:
         action = False
 
         if self.rect.collidepoint(self.editor.mouse_pos):
+            self.image.set_alpha(255)
 
             if self.clicked:
                 for event in self.editor.events:
