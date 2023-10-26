@@ -2,21 +2,24 @@ from typing import List, Self, Union, Dict
 
 import pygame
 
+from settings.buttons import *
 from settings.paths import *
 from settings.panels import *
 
 from utilities.sprites import get_preset_sprites
 
 
-class Button:
+class TileButton:
     def __init__(self,
                  x: int,
                  y: int,
                  image: pygame.Surface,
                  scale: int,
-                 tile_index: Union[None, int]) -> Self:
+                 tile_index: Union[None, int],
+                 editor: any) -> Self:
         """
-            Initialize a Button.
+            Initialize a TileButton to be used in the right panel to
+                place tiles on the grid.
 
             Args:
                 x (int): The x-coordinate of the button's top-left corner.
@@ -24,57 +27,143 @@ class Button:
                 image (pygame.Surface): The image to use for the button.
                 scale (int): The scaling factor for the image.
                 tile_index (int): The index associated with the tile.
+                editor (any): Current Editor instance.
 
         """
         width = image.get_width()
         height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.image = pygame.transform.scale(image,
+                                            (int(width * scale),
+                                             int(height * scale)))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
         self.tile_index = tile_index
 
-    def __str__(self) -> str:
-        return f"Button instance (index: {self.tile_index})"
+        self.editor = editor
 
-    def draw(self,
-             surface: pygame.Surface) -> bool:
+    def __str__(self) -> str:
+        return f"TileButton instance (index: {self.tile_index})"
+
+    def draw(self) -> bool:
         """
-            Draws the button on screen.
+            Draws the TileButton on screen.
             Listens for mouse click and returns a bool conveying
                 if user clicked (mouse 1) on the Button.
-
-            Args:
-                surface (pygame.Surface): The surface to draw the button on.
 
             Returns:
                 bool: True if the button was clicked, False otherwise.
         """
         action = False
-        pos = pygame.mouse.get_pos()
 
-        if self.rect.collidepoint(pos):
+        if self.rect.collidepoint(self.editor.mouse_pos):
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
-                action = True
                 self.clicked = True
+                action = True
 
         if pygame.mouse.get_pressed()[0] == 0:
             self.clicked = False
 
-        surface.blit(self.image, (self.rect.x, self.rect.y))
+        self.editor.screen.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
 
 
-def get_tile_buttons(preset_name: str) -> List[Button]:
+class UtilityButton:
+    def __init__(self,
+                 x: int,
+                 y: int,
+                 image: pygame.Surface,
+                 scale: int,
+                 name: str,
+                 editor: any) -> Self:
+        """
+            Initialize a Button.
+
+            Args:
+                x (int): The x-coordinate of the button's top-left corner.
+                y (int): The y-coordinate of the button's top-left corner.
+                image (pygame.Surface): Image used for the button.
+                scale (int): The scaling factor for the image.
+                name str): Name of the utility.
+                editor (any): Current Editor instance.
+
+        """
+        width = image.get_width()
+        height = image.get_height()
+
+        self.image = pygame.transform.scale(image,
+                                            (int(width * scale),
+                                             int(height * scale)))
+        self.image.set_alpha(200)
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.clicked = False
+
+        self.name = name
+        self.editor = editor
+
+    def __str__(self) -> str:
+        return f"UtilityButton instance (name: {self.name})"
+
+    def draw(self) -> bool:
+        """
+            Draws the button on screen.
+            Listens for mouse click and returns a bool conveying
+                if user clicked (mouse 1) on the Button.
+
+            Button's appearance changes when uer hovers over or clicks ont the button.
+
+            Returns:
+                bool: True if the button was clicked, False otherwise.
+        """
+        button_selected = False
+        action = False
+
+        if self.rect.collidepoint(self.editor.mouse_pos):
+
+            if self.clicked:
+                for event in self.editor.events:
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        action = True
+
+            if pygame.mouse.get_pressed()[0] == 1:
+                button_selected = True
+
+                if not self.clicked:
+                    self.clicked = True
+
+        else:
+            self.image.set_alpha(200)
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        self.editor.screen.blit(self.image, (self.rect.x, self.rect.y))
+        if button_selected:
+            pygame.draw.rect(
+                surface=self.editor.screen,
+                color=BUTTON_HIGHLIGHT_COLOR,
+                rect=self.rect,
+                width=BUTTON_HIGHLIGHT_WIDTH
+            )
+            self.image.set_alpha(255)
+
+        return action
+
+
+def get_tile_buttons(preset_name: str,
+                     editor: any) -> List[TileButton]:
     """
        Get a list of tile buttons related to the preset.
 
        Args:
            preset_name (str): Name of the preset.
+           editor (any): Current Editor instance.
 
        Returns:
-           List[Button]: A list of tile buttons.
+           List[TileButton]: A list of tile buttons.
        """
     button_list = []
     button_col = 0
@@ -89,11 +178,12 @@ def get_tile_buttons(preset_name: str) -> List[Button]:
 
     # Create and append all tile buttons
     for i in range(len(tile_list_)):
-        tile_button = Button(x=SCREEN_WIDTH + (TILE_X_SPACING * button_col + TILE_X),
-                             y=TILE_Y_OFFSET * button_row + TILE_START_Y,
-                             image=tile_list_[i],
-                             scale=1,
-                             tile_index=index_list[i])
+        tile_button = TileButton(x=SCREEN_WIDTH + (TILE_X_SPACING * button_col + TILE_X),
+                                 y=TILE_Y_OFFSET * button_row + TILE_START_Y,
+                                 image=tile_list_[i],
+                                 scale=1,
+                                 tile_index=index_list[i],
+                                 editor=editor)
         button_list.append(tile_button)
         button_col += 1
         if button_col == 3:
@@ -103,23 +193,18 @@ def get_tile_buttons(preset_name: str) -> List[Button]:
     return button_list
 
 
-def get_utility_button(btn_dict: Dict[str, Dict[str, Button]],
-                       name: str,
-                       state: str,
-                       **kwargs) -> Button:
+def get_utility_button(editor: any,
+                       **kwargs) -> UtilityButton:
     """
-        Creates a Button instance based on a dict containing the Button's parameters.
-        Adds Button to active Editor instance to allow calculations.
+        Creates a UtilityButton instance based on a dict containing the Button's parameters.
 
         Args:
-             btn_dict (Dict): Editor attribute containing all utility Buttons.
-             name (str): Name of the Button used to save as key value in btn_dict.
-             state (str): Button type (inactive, selected, active).
-             **kwargs (Dict): Button parameters (x, y, image, scale, tile_index)
+             editor (any): Current Editor instance.
+             **kwargs (dict): Button parameters (x, y, image, scale, tile_index)
 
         Returns:
-              A Button with kwargs attributes.
+              A UtilityButton with kwargs attributes.
     """
-    util_button = Button(**kwargs)
-    btn_dict[name] = {state: util_button}
+    util_button = UtilityButton(editor=editor,
+                                **kwargs)
     return util_button

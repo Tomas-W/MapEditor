@@ -45,7 +45,6 @@ class Editor:
         self._columns = COLUMNS
         self._grid_size_x = GRID_SIZE_X
         self._grid_size_y = GRID_SIZE_Y
-        # self.preferences_dict: Dict[str, int] = helpers.get_preferences_dict(editor=self)
         self.world_data: List[List[int]] = general.get_fresh_world_data(
             columns=self._columns,
             rows=self._rows
@@ -88,43 +87,31 @@ class Editor:
         self.tile_indexes: List[int] = general.get_tile_indexes(
             preset_name=self.current_preset
         )
-        self.tile_buttons: List[buttons.Button] = buttons.get_tile_buttons(
-            preset_name=self.current_preset
+        self.tile_buttons: List[buttons.TileButton] = buttons.get_tile_buttons(
+            preset_name=self.current_preset,
+            editor=self
         )
         self.current_tile: int = 0
         self.current_object: int = self.tile_indexes[0]
 
         # Utility buttons
-        self.utility_buttons = {}
-        self.sets_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="sets",
-                                                      state="inactive",
-                                                      **SETS_BTN_INACTIVE)
-        self.save_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="save",
-                                                      state="inactive",
-                                                      **SAVE_BTN_INACTIVE)
-        self.load_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="load",
-                                                      state="inactive",
-                                                      **LOAD_BTN_INACTIVE)
-        self.name_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="name",
-                                                      state="inactive",
-                                                      **NAME_BTN_INACTIVE)
-        self.pref_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="pref",
-                                                      state="inactive",
-                                                      **PREF_BTN_INACTIVE)
+        self.sets_button = buttons.get_utility_button(editor=self,
+                                                      **SETS_BTN)
+        self.save_button = buttons.get_utility_button(editor=self,
+                                                      **SAVE_BTN)
+        self.load_button = buttons.get_utility_button(editor=self,
+                                                      **LOAD_BTN)
+        self.name_button = buttons.get_utility_button(editor=self,
+                                                      **NAME_BTN)
+        self.pref_button = buttons.get_utility_button(editor=self,
+                                                      **PREF_BTN)
 
-        self.back_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                      name="back",
-                                                      state="inactive",
-                                                      **BACK_BTN_INACTIVE)
-        self.ok_button = buttons.get_utility_button(btn_dict=self.utility_buttons,
-                                                    name="ok",
-                                                    state="inactive",
-                                                    **OK_BTN_INACTIVE)
+        self.back_button = buttons.get_utility_button(editor=self,
+                                                      **BACK_BTN)
+        self.ok_button = buttons.get_utility_button(editor=self,
+                                                    **OK_BTN)
+        self.grid_button = buttons.get_utility_button(editor=self,
+                                                      **GRID_BTN)
 
         # States
         self.is_running = True
@@ -274,9 +261,9 @@ class Editor:
         self.tile_names = general.get_tile_names(
             preset_name=self.current_preset
         )
-        print(self.tile_names)
         self.tile_buttons = buttons.get_tile_buttons(
-            preset_name=self.current_preset
+            preset_name=self.current_preset,
+            editor=self
         )
         self.displaying_presets = False
 
@@ -285,7 +272,7 @@ class Editor:
             Draws all tiles on side panel and stores currently selected tile.
         """
         for button_count, button in enumerate(self.tile_buttons):
-            if button.draw(self.screen):
+            if button.draw():
                 self.current_tile = button_count
                 self.current_object = button.tile_index
 
@@ -360,21 +347,21 @@ class Editor:
                 Load (Load saved map)
                 Name (Rename current map)
         """
-        if self.sets_button.draw(self.screen):
+        if self.sets_button.draw():
             self.displaying_presets = not self.displaying_presets
 
-        if self.save_button.draw(self.screen):
+        if self.save_button.draw():
             helpers.save_map_details(editor=self)
 
-        if self.load_button.draw(self.screen):
+        if self.load_button.draw():
             self.is_loading_map = True
             self.is_building = False
 
-        if self.name_button.draw(self.screen):
+        if self.name_button.draw():
             self.is_changing_name = True
             self.is_building = False
 
-        if self.pref_button.draw(self.screen):
+        if self.pref_button.draw():
             self.is_building = False
             self.is_changing_preferences = True
 
@@ -398,12 +385,12 @@ class Editor:
 
     def draw_preference_buttons(self) -> None:
         # Do not save value and go back
-        if self.back_button.draw(self.screen):
+        if self.back_button.draw():
             self.is_changing_preferences = False
             self.is_building = True
 
         # Save new value
-        if self.ok_button.draw(self.screen):
+        if self.ok_button.draw():
             if general.is_new_value_allowed(name=self.selected_preference_name,
                                             value=int(self.selected_preference_value_change)):
                 print(
@@ -444,13 +431,13 @@ class Editor:
                     self.temp_map_name += events.unicode
 
         # Do not save new map name
-        if self.back_button.draw(self.screen):
+        if self.back_button.draw():
             self.temp_map_name = self.map_name
             self.is_changing_name = False
             self.is_building = True
 
         # Save new map name
-        if self.ok_button.draw(self.screen):
+        if self.ok_button.draw():
             self.map_name = self.temp_map_name
             self.is_changing_name = False
             self.is_building = True
@@ -543,10 +530,9 @@ class Editor:
                 selected_preset = self.menus.highlight_selected_preset()
                 if selected_preset is not None:
                     self.load_new_preset(selected_preset=selected_preset)
-                    time.sleep(0.1)  # to prevent placing tile
 
             self.draw_utility_buttons()
-
+            # Menu
             if self.is_changing_name:
                 self.screen.fill(DARK_ORANGE)
                 self.menus.draw_rename_menu()
@@ -562,8 +548,6 @@ class Editor:
                     helpers.update_class_dict(cls=self,
                                               attributes=map_attributes)
 
-                    time.sleep(0.1)  # to prevent placing tile
-
             elif self.is_changing_preferences:
                 self.screen.fill(DARK_ORANGE)
                 self.menus.draw_preferences_menu()
@@ -575,6 +559,7 @@ class Editor:
                     self.selected_preference_value = selected_preference[1]
                     self.selected_preference_value_change = self.selected_preference_value
 
+            # Building
             elif self.is_building:
                 self.manage_scrolling()
                 self.scroll_map()
@@ -584,6 +569,9 @@ class Editor:
                     self.draw_tile_labels()
                     self.highlight_selected_tile()
                     self.place_and_remove_tiles()
+
+            if self.grid_button.draw():
+                self.show_grid = not self.show_grid
 
             pygame.display.update()
             self.clock.tick(FPS)

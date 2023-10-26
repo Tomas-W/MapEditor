@@ -22,6 +22,8 @@ import utilities.helpers as helpers
 class Menu:
     editor: any
 
+    clicked = False
+
     preferences_dict: OrderedDict = field(
         default_factory=general.get_empty_ordered_dict
     )
@@ -178,7 +180,7 @@ class Menu:
 
             Uses:
                screen (pygame.display): Editor window.
-               saved_maps_ouline_rects (list): All recs containing the maps.
+               saved_maps_outline_rects (list): All recs containing the maps.
 
            Returns:
                Union[None, str].
@@ -191,8 +193,16 @@ class Menu:
                     rect=outline_rect,
                     width=SAVED_MAPS_HIGHLIGHT_WIDTH
                 )
+                if self.clicked:
+                    for event in self.editor.events:
+                        if event.type == pygame.MOUSEBUTTONUP:
+                            return self.saved_map_names[i]
+
                 if pygame.mouse.get_pressed()[0] == 1:
-                    return self.saved_map_names[i]
+                    self.clicked = True
+
+                else:
+                    self.clicked = False
 
         return None
 
@@ -238,6 +248,7 @@ class Menu:
                None.
         """
         for i, outline_rect in enumerate(self.preset_names_outline_rects):
+
             if outline_rect.collidepoint(self.editor.mouse_pos):
                 pygame.draw.rect(
                     surface=self.editor.screen,
@@ -249,8 +260,16 @@ class Menu:
                     width=PRESETS_HIGHLIGHT_WIDTH
                 )
 
+                if self.clicked:
+                    for event in self.editor.events:
+                        if event.type == pygame.MOUSEBUTTONUP:
+                            return self.preset_names[i]
+
                 if pygame.mouse.get_pressed()[0] == 1:
-                    return self.preset_names[i]
+                    self.clicked = True
+
+                else:
+                    self.clicked = False
 
         return None
 

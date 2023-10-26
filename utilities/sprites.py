@@ -7,7 +7,6 @@ import utilities.general as general
 from settings.setup import *
 from settings.paths import *
 
-
 # General
 sky_img = pygame.image.load(os.path.join(IMAGES_DIR,
                                          "clouds.png")).convert()
@@ -15,7 +14,6 @@ sky_img = pygame.image.load(os.path.join(IMAGES_DIR,
 background_img = pygame.transform.scale(
     pygame.image.load(os.path.join(IMAGES_DIR, "grass.png")).convert(),
     (COLUMNS * GRID_SIZE_X, ROWS * GRID_SIZE_Y))
-
 
 # Util buttons
 sets_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
@@ -26,9 +24,6 @@ save_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
 
 load_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "load_btn.png")).convert_alpha()
-
-load_button_active_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                          "load_btn_active.png")).convert_alpha()
 
 name_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "name_btn.png")).convert_alpha()
@@ -42,6 +37,9 @@ back_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
 
 ok_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                  "ok_btn.png")).convert_alpha()
+
+grid_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "grid_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,
