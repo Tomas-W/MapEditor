@@ -1,5 +1,5 @@
 import time
-from typing import List, Self
+from typing import List, Self, Tuple
 
 import pygame
 
@@ -94,27 +94,37 @@ class Editor:
         )
         self.current_tile: int = 0
         self.current_object: int = self.tile_indexes[0]
+        self.tile_undo_tracker: List[Tuple[tuple, int]] = []
+        self.tile_redo_tracker: List[Tuple[tuple, int]] = []
 
-        # Utility buttons
+        # Presets buttons
         self.sets_button = buttons.get_utility_button(editor=self,
                                                       **SETS_BTN)
+        # Menu buttons
         self.save_button = buttons.get_utility_button(editor=self,
                                                       **SAVE_BTN)
         self.load_button = buttons.get_utility_button(editor=self,
                                                       **LOAD_BTN)
+        self.new_button = buttons.get_utility_button(editor=self,
+                                                     **NEW_BTN)
         self.name_button = buttons.get_utility_button(editor=self,
                                                       **NAME_BTN)
         self.pref_button = buttons.get_utility_button(editor=self,
                                                       **PREF_BTN)
-
+        # Extra Menu buttons
         self.back_button = buttons.get_utility_button(editor=self,
                                                       **BACK_BTN)
         self.ok_button = buttons.get_utility_button(editor=self,
                                                     **OK_BTN)
+        # Quick Menu buttons
         self.grid_button = buttons.get_utility_button(editor=self,
                                                       **GRID_BTN)
         self.map_button = buttons.get_utility_button(editor=self,
                                                      **MAP_BTN)
+        self.undo_button = buttons.get_utility_button(editor=self,
+                                                      **UNDO_BTN)
+        self.redo_button = buttons.get_utility_button(editor=self,
+                                                      **REDO_BTN)
 
         # States
         self.is_running = True
@@ -144,6 +154,22 @@ class Editor:
         for event in self.events:
             if event.type == pygame.QUIT:
                 self.is_running = False
+
+    def manage_undo_redo(self) -> None:
+        for event in self.events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_z:
+                    self.undo_tile_placement()
+
+                if event.key == pygame.K_x:
+                    self.redo_tile_placement()
+
+        keys = self.keys
+
+        if keys[pygame.K_z] and keys[pygame.K_LSHIFT]:
+            self.undo_tile_placement()
+        if keys[pygame.K_x] and keys[pygame.K_LSHIFT]:
+            self.redo_tile_placement()
 
     def manage_scrolling(self) -> None:
         """
@@ -246,12 +272,17 @@ class Editor:
         self.scale_width = SCREEN_WIDTH / map_width
         self.scale_height = SCREEN_HEIGHT / map_height
 
-        self._grid_size_x = GRID_SIZE_X * self.scale_width
-        self._grid_size_y = GRID_SIZE_Y * self.scale_height
+        if self.scale_width < self.scale_height:
+            scale_factor = self.scale_width
+        else:
+            scale_factor = self.scale_height
+
+        self._grid_size_x = GRID_SIZE_X * scale_factor
+        self._grid_size_y = GRID_SIZE_Y * scale_factor
 
         self.background = pygame.transform.scale(surface=self.background,
-                                                 size=(self.background.get_width() * self.scale_width,
-                                                       self.background.get_height() * self.scale_height))
+                                                 size=(self.background.get_width() * scale_factor,
+                                                       self.background.get_height() * scale_factor))
 
     def reset_scale(self) -> None:
         """
@@ -354,14 +385,56 @@ class Editor:
                   TILE_SIZE_Y + TILE_HIGHLIGHT_RIGHT_OFFSET),
             width=TILE_HIGHLIGHT_WIDTH)
 
+    def update_undo_tracker(self,
+                            coords: int,
+                            tile_index: int) -> None:
+        if len(self.tile_undo_tracker) > MAX_TILE_TRACKING:
+            self.tile_undo_tracker.pop(0)
+
+        self.tile_undo_tracker.append((coords, tile_index))
+
+    def update_redo_tracker(self,
+                            coords: int,
+                            tile_index: int) -> None:
+        if len(self.tile_redo_tracker) > MAX_TILE_TRACKING:
+            self.tile_redo_tracker.pop(0)
+
+        self.tile_redo_tracker.append((coords, tile_index))
+
+    def undo_tile_placement(self) -> None:
+        try:
+            last_action = self.tile_undo_tracker.pop()
+            (x, y), index = last_action
+            self.update_redo_tracker(coords=(x, y),
+                                     tile_index=self.world_data[y][x])
+            self.world_data[y][x] = index
+            print(self.tile_undo_tracker)
+        except IndexError:
+            return
+
+    def redo_tile_placement(self) -> None:
+        try:
+            last_action = self.tile_redo_tracker.pop()
+            print(last_action)
+            (x, y), index = last_action
+            self.update_undo_tracker(
+                coords=(x, y),
+                tile_index=self.world_data[y][x]
+            )
+            self.world_data[y][x] = index
+
+            print(self.tile_redo_tracker)
+        except IndexError:
+            return
+
     def place_and_remove_tiles(self) -> None:
         """
             Places self.current_tile on the grid at current mouse position or
                 removes tile in current grid location.
         """
         mouse_pos = self.mouse_pos
-        x = (mouse_pos[0] - self.scroll_x) // self._grid_size_x
-        y = (mouse_pos[1] - self.scroll_y) // self._grid_size_y
+        x = int((mouse_pos[0] - self.scroll_x) / self._grid_size_x)
+        y = int((mouse_pos[1] - self.scroll_y) / self._grid_size_y)
 
         # Check if within map canvas
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
@@ -370,14 +443,23 @@ class Editor:
                 if helpers.can_place_tile(editor=self,
                                           grid_x=x,
                                           grid_y=y):
+                    old_tile_index = self.world_data[y][x]
+                    self.update_undo_tracker(coords=(x, y),
+                                             tile_index=old_tile_index)
                     self.world_data[y][x] = self.current_object
+                    self.tile_redo_tracker = []
+                    print(self.tile_undo_tracker)
 
-            if pygame.mouse.get_pressed()[2] == 1:
+            elif pygame.mouse.get_pressed()[2] == 1:
                 # Remove tile if within bounds
                 if helpers.can_remove_tile(editor=self,
                                            grid_x=x,
                                            grid_y=y):
+                    old_tile_index = self.world_data[y][x]
                     self.world_data[y][x] = -1
+                    self.update_undo_tracker(coords=(x, y),
+                                             tile_index=old_tile_index)
+                    self.tile_redo_tracker = []
 
     def draw_bottom_panel(self) -> None:
         """
@@ -589,6 +671,12 @@ class Editor:
                     self.load_new_preset(selected_preset=selected_preset)
 
             # Quick menu
+            self.manage_undo_redo()
+
+            if self.undo_button.draw():
+                self.undo_tile_placement()
+            if self.redo_button.draw():
+                self.redo_tile_placement()
             if self.grid_button.draw():
                 self.show_grid = not self.show_grid
 
@@ -599,6 +687,10 @@ class Editor:
 
                 else:
                     self.reset_scale()
+
+            if self.new_button.draw():
+                self.world_data = general.get_fresh_world_data(columns=self._columns,
+                                                               rows=self._rows)
 
             # Menus
             self.draw_menu_buttons()

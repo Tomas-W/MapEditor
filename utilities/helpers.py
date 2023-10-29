@@ -117,9 +117,30 @@ def deserialize_map_details(editor: any,
 def can_place_tile(editor: any,
                    grid_x: int,
                    grid_y: int) -> bool:
-    # noinspection PyProtectedMember
+    """
+        Checks if the current mouse position is within the maps boundaries.
+        Mouse position is expressed in grid units, not actual coordinates.
+        Returns True if it is, else False.
+        No tiles can be placed outside of grid, only removed.
+
+        Args:
+            editor (any): Current Editor instance.
+            grid_x (int): Current mouse x position expressed in grid units.
+            grid_y (int): Current mouse y position expressed in grid units.
+
+        Returns:
+            True if x and y are in world data, else False.
+    """
+    # Check if object is new or already placed
+    if editor.world_data[grid_y][grid_x] == editor.current_object:
+        return False
+
+    # Check top and left boundaries
     if grid_x < 0 or grid_y < 0:
         return False
+
+    # Check bottom and right boundaries
+    # noinspection PyProtectedMember
     if grid_x >= editor._columns or grid_y >= editor._rows:
         return False
 
@@ -133,6 +154,7 @@ def can_remove_tile(editor: any,
         Checks if the current mouse position is within the maps boundaries.
         Mouse position is expressed in grid units, not actual coordinates.
         Returns True if it is, else False.
+        No tiles can be placed outside of grid, only removed.
 
         Args:
             editor (any): Current Editor instance.
@@ -142,11 +164,15 @@ def can_remove_tile(editor: any,
         Returns:
             True if x and y are in world data, else False.
     """
+    # Check if object is new or already placed
+    if editor.world_data[grid_y][grid_x] == -1:
+        return False
+
     if 0 <= grid_y < len(editor.world_data) and 0 <= grid_x < len(
             editor.world_data[grid_y]):
         return True
-    else:
-        return False
+
+    return False
 
 
 def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
