@@ -98,7 +98,7 @@ class Menu:
 
             Uses:
                screen (pygame.display): Editor window.
-               saved_maps_ouline_rects (list): All recs containing the preferences.
+               saved_maps_outline_rects (list): All recs containing the preferences.
 
            Returns:
                Union[None, Tuple[str, int]].
@@ -112,6 +112,10 @@ class Menu:
                     width=5
                 )
                 if pygame.mouse.get_pressed()[0] == 1:
+                    self.editor.selected_preference_value_change = list(self.preferences_dict.items())[i][-1]
+                    print(list(self.preferences_dict.items())[i])
+                    print(self.editor._rows, self.editor._columns)
+
                     return list(self.preferences_dict.items())[i]
 
         return None

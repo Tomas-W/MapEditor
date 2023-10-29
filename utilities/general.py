@@ -43,6 +43,65 @@ def get_fresh_world_data(columns: int,
     return [[-1] * columns for _ in range(rows)]
 
 
+def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
+    """
+        Get the number of rows and columns that can be removed from the end of world_data.
+        First value is the number of rows, descending, that contain no -1.
+        Second value is the number of columns, descending, that contain no -1
+
+        Args:
+            world_data (List[List[int]]: Nested list containing tile indexes of the map.
+
+        Returns:
+            Tuple[int, int]: Number of rows and columns that can be safely removed.
+    """
+    rows_to_remove = 0
+    for row in world_data[::-1]:
+        if all(index == -1 for index in row):
+            rows_to_remove += 1
+        else:
+            break
+
+    remove = 0
+    for row in world_data:
+        cols_ = 0
+        for i, col in enumerate(row):
+            if col != -1:
+                cols_ = i
+        remove = max(remove, cols_)
+
+    cols_to_remove = len(world_data[0]) - 1 - remove
+
+    return rows_to_remove, cols_to_remove
+
+
+def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
+    """
+        Removes all rows and columns, descending, that contain only -1 values.
+
+        Args:
+            world_data (List[List[int]]): Nested list containing tile indexes of the map.
+
+        Returns:
+            List[List[int]]: Cropped version of world_data
+    """
+    rows, cols = get_grid_max_row_col(world_data=world_data)
+    row_slicer = -rows
+    col_slicer = -cols
+
+    if rows > 0:
+        world_data = world_data[:row_slicer]
+
+    if cols > 0:
+        new_world_data = []
+        for row in world_data:
+            new_world_data.append(row[:col_slicer])
+    else:
+        new_world_data = world_data
+
+    return new_world_data
+
+
 def get_preset_dir_names() -> List[str]:
     """
        Get a list of folders in the 'presets' folder.

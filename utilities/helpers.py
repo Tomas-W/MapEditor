@@ -132,9 +132,13 @@ def can_place_tile(editor: any,
             True if x and y are in world data, else False.
     """
     # Check if object is new or already placed
-    if editor.world_data[grid_y][grid_x] == editor.current_object:
+    try:
+        test = editor.world_data[grid_y][grid_x]
+    except IndexError:
         return False
 
+    if test == editor.current_object:
+        return False
     # Check top and left boundaries
     if grid_x < 0 or grid_y < 0:
         return False
@@ -165,7 +169,10 @@ def can_remove_tile(editor: any,
             True if x and y are in world data, else False.
     """
     # Check if object is new or already placed
-    if editor.world_data[grid_y][grid_x] == -1:
+    try:
+        if editor.world_data[grid_y][grid_x] == -1:
+            return False
+    except IndexError:
         return False
 
     if 0 <= grid_y < len(editor.world_data) and 0 <= grid_x < len(
@@ -238,3 +245,16 @@ def update_background(editor: any) -> pygame.Surface:
                                       editor._columns * editor._grid_size_x,
                                       editor._rows * editor._grid_size_y
                                   ))
+
+
+def update_world_data_size(editor: any) -> None:
+    rows_to_add = editor._rows - len(editor.world_data)
+    cols_to_add = editor._columns - len(editor.world_data[0])
+
+    for row in editor.world_data:
+        for x in range(cols_to_add):
+            row.append(-1)
+
+    for x in range(rows_to_add):
+        editor.world_data.append([-1 for y in range(editor._columns)])
+

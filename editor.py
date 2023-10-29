@@ -11,6 +11,7 @@ from settings.paths import *
 from settings.canvas import *
 from settings.minimap import *
 from settings.panels import *
+from settings.errors import MAX_NR_TILES
 
 screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
@@ -61,6 +62,9 @@ class Editor:
         self.scroll_speed = BASE_SCROLL_SPEED
         self.base_scroll_speed = BASE_SCROLL_SPEED
         self.max_scroll_speed = MAX_SCROLL_SPEED
+        # Save position for switching between build- and overview
+        self.editing_scroll_x = 0
+        self.editing_scroll_y = 0
 
         # Menus
         self.menus = Menu(editor=self)
@@ -68,8 +72,8 @@ class Editor:
 
         # Preferences
         self.selected_preference_name = "_rows"
-        self.selected_preference_value = ROWS
-        self.selected_preference_value_change = ROWS
+        self.selected_preference_value = self._rows
+        self.selected_preference_value_change = self._rows
 
         # Presets
         self.preset_names: List[str] = general.get_preset_dir_names()
@@ -354,8 +358,9 @@ class Editor:
     def draw_and_select_tile(self) -> None:
         """
             Draws all tiles on side panel and stores currently selected tile.
+            Limits the number of tiles to MAX_NR_TILES.
         """
-        for button_count, button in enumerate(self.tile_buttons):
+        for button_count, button in enumerate(self.tile_buttons[:MAX_NR_TILES]):
             if button.draw():
                 self.current_tile = button_count
                 self.current_object = button.tile_index
@@ -364,7 +369,7 @@ class Editor:
         """
             Draws label above the tile on the side panel.
         """
-        for tile, text_ in zip(self.tile_buttons, self.tile_names):
+        for tile, text_ in zip(self.tile_buttons[:MAX_NR_TILES], self.tile_names[:MAX_NR_TILES]):
             text.draw(screen=self.screen,
                       text=str(text_),
                       font=fonts.label_font,
@@ -374,7 +379,7 @@ class Editor:
 
     def highlight_selected_tile(self) -> None:
         """
-            Draws a red square around the selected tile.
+            Draws a red rect around the selected tile.
         """
         pygame.draw.rect(
             surface=self.screen,
@@ -386,8 +391,20 @@ class Editor:
             width=TILE_HIGHLIGHT_WIDTH)
 
     def update_undo_tracker(self,
-                            coords: int,
+                            coords: Tuple[int, int],
                             tile_index: int) -> None:
+        """
+            Updates undo tracker with the tile index of the file before the new tile was placed.
+            If number of stored tiles exceeds settings.setup MAX_TILE_TRACKING,
+                the first item in the array is removed.
+
+            Args:
+                coords (Tuple[int, int]: Grid coordinates of the tile.
+                tile_index (int): The tile index of the 'old' tile.
+
+            Returns:
+                None
+        """
         if len(self.tile_undo_tracker) > MAX_TILE_TRACKING:
             self.tile_undo_tracker.pop(0)
 
@@ -396,26 +413,56 @@ class Editor:
     def update_redo_tracker(self,
                             coords: int,
                             tile_index: int) -> None:
+        """
+            Updates redo_tracker with the tile index of the tile before the new tile was 'un-done'.
+            If number of stored tiles exceeds settings.setup MAX_TILE_TRACKING,
+                the first item in the array is removed.
+
+            Args:
+                coords (Tuple[int, int]: Grid coordinates of tile.
+                tile_index (int): The tile index of the 'un-done' tile.
+
+            Returns:
+                None
+        """
         if len(self.tile_redo_tracker) > MAX_TILE_TRACKING:
             self.tile_redo_tracker.pop(0)
 
         self.tile_redo_tracker.append((coords, tile_index))
 
     def undo_tile_placement(self) -> None:
+        """
+            Undo the last tile adding or removal.
+            Takes the currently last placed tile's grid location and tile index and
+                saves it in the redo_tracker.
+            Then takes the last item in the undo_tracker and adds the tile index to the corresponding
+                grid location.
+
+            Returns:
+                None
+        """
         try:
             last_action = self.tile_undo_tracker.pop()
             (x, y), index = last_action
             self.update_redo_tracker(coords=(x, y),
                                      tile_index=self.world_data[y][x])
             self.world_data[y][x] = index
-            print(self.tile_undo_tracker)
         except IndexError:
             return
 
     def redo_tile_placement(self) -> None:
+        """
+            Redo the last undo_tile_placement.
+            Takes the currently last 'un-done' tile's grid location and tile index and
+                saves it in the undo_tracker.
+            Then takes the last item in the redo_tracker and adds the tile index to the corresponding
+                grid location.
+
+            Returns:
+                None
+        """
         try:
             last_action = self.tile_redo_tracker.pop()
-            print(last_action)
             (x, y), index = last_action
             self.update_undo_tracker(
                 coords=(x, y),
@@ -423,7 +470,6 @@ class Editor:
             )
             self.world_data[y][x] = index
 
-            print(self.tile_redo_tracker)
         except IndexError:
             return
 
@@ -448,7 +494,6 @@ class Editor:
                                              tile_index=old_tile_index)
                     self.world_data[y][x] = self.current_object
                     self.tile_redo_tracker = []
-                    print(self.tile_undo_tracker)
 
             elif pygame.mouse.get_pressed()[2] == 1:
                 # Remove tile if within bounds
@@ -525,6 +570,8 @@ class Editor:
         if self.back_button.draw():
             self.is_changing_preferences = False
             self.is_building = True
+
+            helpers.update_world_data_size(editor=self)
 
         # Save new value
         if self.ok_button.draw():
@@ -647,14 +694,9 @@ class Editor:
                                  scroll_x=self.scroll_x,
                                  scroll_y=self.scroll_y)
 
-            # Canvas
+            # Grid
             if self.show_grid:
                 self.draw_grid()
-
-            if self.show_map_overview:
-                self.draw_map_overview()
-            else:
-                self.draw_map()
 
             # Panels
             self.draw_minimap()
@@ -680,17 +722,36 @@ class Editor:
             if self.grid_button.draw():
                 self.show_grid = not self.show_grid
 
-            if self.map_button.draw():
-                self.show_map_overview = not self.show_map_overview
-                if self.scale_height == 1:
-                    self.set_overview_scale()
+            if self.show_map_overview:
+                self.draw_map_overview()
+            else:
+                self.draw_map()
 
+            if self.map_button.draw():
+                self.world_data = general.crop_world_data(world_data=self.world_data)
+                print(len(self.world_data))
+                print(len(self.world_data[0]))
+                self._rows = len(self.world_data)
+                self._columns = len(self.world_data[0])
+                if not self.show_map_overview:
+                    self.editing_scroll_x = self.scroll_x
+                    self.editing_scroll_y = self.scroll_y
+                    self.scroll_x = 0
+                    self.scroll_y = 0
+                    self.set_overview_scale()
                 else:
+                    self.scroll_x = self.editing_scroll_x
+                    self.scroll_y = self.editing_scroll_y
                     self.reset_scale()
 
+                self.show_map_overview = not self.show_map_overview
+                self.background = helpers.update_background(editor=self)
+
             if self.new_button.draw():
-                self.world_data = general.get_fresh_world_data(columns=self._columns,
-                                                               rows=self._rows)
+                # self.world_data = general.get_fresh_world_data(columns=self._columns,
+                #                                                rows=self._rows)
+                map_editor = Editor()
+                map_editor.run()
 
             # Menus
             self.draw_menu_buttons()

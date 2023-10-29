@@ -73,14 +73,14 @@ class ErrorHandler:
             None.
         """
         if len(self.editor.tile_names) > MAX_NR_TILES:
-            self.error_messages["tile"] = MAX_TILES_ERROR
+            self.error_messages["tile"] = f"{MAX_TILES_ERROR} {len(self.editor.tile_names)} in a preset folder."
 
         else:
             self.error_messages["tile"] = None
 
     def set_out_of_bounds_error(self):
         """
-            Sets out_of_bounds error message if tiles are places outside of the current grid.
+            Sets out_of_bounds error message if tiles are places outside the current grid.
             If no error, message is set to None.
 
             Returns:
