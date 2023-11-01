@@ -3,7 +3,7 @@ from typing import List, Union, Dict, OrderedDict, Tuple, Self
 
 import pygame
 
-import utilities.text as text
+import utilities.drawing as text
 
 from settings.setup import *
 from settings.paths import *
@@ -14,7 +14,7 @@ from settings.panels import *
 from settings.menus import *
 from settings.minimap import *
 
-import utilities.text as drawing
+import utilities.drawing as drawing
 import utilities.fonts as fonts
 import utilities.general as general
 import utilities.sprites as sprites

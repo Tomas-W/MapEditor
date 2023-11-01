@@ -228,13 +228,13 @@ def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
     return larger_rect
 
 
-def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
+def get_preferences_dict(self) -> OrderedDict[str, int]:
     # noinspection PyProtectedMember
     preferences_dict: OrderedDict[str, int] = OrderedDict([
-        ("_rows", editor._rows),
-        ("_columns", editor._columns),
-        ("_grid_size_x", editor._grid_size_x),
-        ("_grid_size_y", editor._grid_size_y)])
+        ("_rows", self.editor._rows),
+        ("_columns", self.editor._columns),
+        ("_grid_size_x", self.editor._grid_size_x),
+        ("_grid_size_y", self.editor._grid_size_y)])
     return preferences_dict
 
 

@@ -102,33 +102,6 @@ def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
     return new_world_data
 
 
-def get_preset_dir_names() -> List[str]:
-    """
-       Get a list of folders in the 'presets' folder.
-
-       Returns:
-           List[str]: List of names of folders in 'presets' folder.
-       """
-    return sorted([f.name for f in os.scandir(PRESET_DIR) if f.is_dir()])
-
-
-def get_shortened_dir_names() -> List[str]:
-    """
-       Get a list of folders in the 'presets' folder and returns a list where
-        the names have been capped to 15 and have trailing '..'
-
-       Returns:
-           List[str]: List of names of shortened folders in 'presets' folder.
-       """
-    names = get_preset_dir_names()
-
-    for i, name in enumerate(names):
-        if len(name) > 15:
-            names[i] = name[:14] + ".."
-
-    return names
-
-
 def get_sorted_tile_names(preset_name: str) -> List[str]:
     """
         Get a list of tile names sorted by their index.
@@ -203,36 +176,6 @@ def get_tile_indexes(preset_name: str) -> List[int]:
     return sorted(
         [int(f.split("_")[0]) for f in os.listdir(os.path.join(PRESET_DIR, preset_name)) if
          f.endswith(".png")])
-
-
-def get_saved_map_names() -> List[str]:
-    """
-        Get a list with the name of the saved maps in the maps folder.
-
-        Returns:
-             List[str]: Names of al saved maps.
-    """
-    return os.listdir(MAPS_DIR)
-
-
-def get_empty_list() -> List:
-    """
-        Get an empty list.
-
-        Returns:
-            List: An empty list.
-    """
-    return []
-
-
-def get_empty_ordered_dict() -> OrderedDictType[str, int]:
-    """
-        Get an empty OrderedDict.
-
-        Returns:
-            OrderedDict: An empty OrderedDict.
-    """
-    return OrderedDict()
 
 
 def is_new_value_allowed(name: str,

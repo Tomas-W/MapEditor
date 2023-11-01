@@ -5,7 +5,8 @@ RIGHT_PANEL_COLOR = BROWN
 BOTTOM_PANEL_COLOR = BROWN
 
 
-# ######## Tabs ######## #
+# ######## Presets ######## #
+PRESETS_MAX_NAME_LENGTH = 15
 PRESETS_NAME_FONT_HEIGHT = 32  # linked with fonts.py
 PRESETS_NAME_X_OFFSET = SCREEN_WIDTH + 20
 PRESETS_NAME_Y_OFFSET = 75

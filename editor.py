@@ -1,22 +1,19 @@
-import time
-from typing import List, Self, Tuple
+from typing import Self, Tuple
 
 import pygame
 
 pygame.init()
 
-from settings.setup import *
-from settings.paths import *
-
 from settings.canvas import *
 from settings.minimap import *
 from settings.panels import *
-from settings.errors import MAX_NR_TILES
+from settings.errors import *
 
 screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
 
-from menus import Menu
+from menu_handler import MenuHandler
+from event_handler import EventHandler
 from error_handler import ErrorHandler
 
 from settings.buttons import *
@@ -26,15 +23,15 @@ import utilities.fonts as fonts
 import utilities.general as general
 import utilities.helpers as helpers
 import utilities.sprites as sprites
-import utilities.text as text
+import utilities.drawing as text
 
 
 class Editor:
     def __init__(self) -> Self:
         self.clock: pygame.time.Clock = pygame.time.Clock()
         self.screen: pygame.display = screen
-        self.events: pygame.event = None
-        self.keys: pygame.key = None
+        self.events: pygame.event = pygame.event.get()
+        self.keys: pygame.key = pygame.key.get_pressed()
         self.mouse_pos = pygame.mouse.get_pos()
 
         self.map_name: str = "New map"
@@ -66,9 +63,23 @@ class Editor:
         self.editing_scroll_x = 0
         self.editing_scroll_y = 0
 
+        # Events
+        self.event_handler = EventHandler(editor=self)
+
         # Menus
-        self.menus = Menu(editor=self)
-        self.menus.preferences_dict = helpers.get_preferences_dict(editor=self)
+        self.menu_handler = MenuHandler(editor=self)
+
+        # Quick Menu buttons
+        self.grid_button = buttons.get_utility_button(editor=self,
+                                                      **GRID_BTN)
+        self.map_button = buttons.get_utility_button(editor=self,
+                                                     **MAP_BTN)
+        self.undo_button = buttons.get_utility_button(editor=self,
+                                                      **UNDO_BTN)
+        self.redo_button = buttons.get_utility_button(editor=self,
+                                                      **REDO_BTN)
+        self.crop_button = buttons.get_utility_button(editor=self,
+                                                      **CROP_BTN)
 
         # Preferences
         self.selected_preference_name = "_rows"
@@ -76,8 +87,8 @@ class Editor:
         self.selected_preference_value_change = self._rows
 
         # Presets
-        self.preset_names: List[str] = general.get_preset_dir_names()
-        self.shortened_preset_names: List[str] = general.get_shortened_dir_names()
+        self.preset_names: List[str] = self.menu_handler.preset_names
+        self.shortened_preset_names: List[str] = self.menu_handler.shortened_preset_names
         self.current_preset: str = self.preset_names[0]
         self.displaying_presets = False
 
@@ -101,37 +112,6 @@ class Editor:
         self.tile_undo_tracker: List[Tuple[tuple, int]] = []
         self.tile_redo_tracker: List[Tuple[tuple, int]] = []
 
-        # Presets buttons
-        self.sets_button = buttons.get_utility_button(editor=self,
-                                                      **SETS_BTN)
-        # Menu buttons
-        self.save_button = buttons.get_utility_button(editor=self,
-                                                      **SAVE_BTN)
-        self.load_button = buttons.get_utility_button(editor=self,
-                                                      **LOAD_BTN)
-        self.new_button = buttons.get_utility_button(editor=self,
-                                                     **NEW_BTN)
-        self.name_button = buttons.get_utility_button(editor=self,
-                                                      **NAME_BTN)
-        self.pref_button = buttons.get_utility_button(editor=self,
-                                                      **PREF_BTN)
-        # Extra Menu buttons
-        self.back_button = buttons.get_utility_button(editor=self,
-                                                      **BACK_BTN)
-        self.ok_button = buttons.get_utility_button(editor=self,
-                                                    **OK_BTN)
-        # Quick Menu buttons
-        self.grid_button = buttons.get_utility_button(editor=self,
-                                                      **GRID_BTN)
-        self.map_button = buttons.get_utility_button(editor=self,
-                                                     **MAP_BTN)
-        self.undo_button = buttons.get_utility_button(editor=self,
-                                                      **UNDO_BTN)
-        self.redo_button = buttons.get_utility_button(editor=self,
-                                                      **REDO_BTN)
-        self.crop_button = buttons.get_utility_button(editor=self,
-                                                      **CROP_BTN)
-
         # States
         self.is_running = True
         self.is_building = True
@@ -153,59 +133,10 @@ class Editor:
     def __str__(self) -> str:
         return "Editor instance"
 
-    def manage_quitting(self) -> None:
-        """
-            Listens for quit event.
-        """
-        for event in self.events:
-            if event.type == pygame.QUIT:
-                self.is_running = False
-
-    def manage_undo_redo(self) -> None:
-        for event in self.events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_z:
-                    self.undo_tile_placement()
-
-                if event.key == pygame.K_x:
-                    self.redo_tile_placement()
-
-        keys = self.keys
-
-        if keys[pygame.K_z] and keys[pygame.K_LSHIFT]:
-            self.undo_tile_placement()
-        if keys[pygame.K_x] and keys[pygame.K_LSHIFT]:
-            self.redo_tile_placement()
-
-    def manage_scrolling(self) -> None:
-        """
-            Gets user inputs and changes scroll values.
-        """
-        keys = self.keys
-
-        # Activate scrolling
-        if keys[pygame.K_a]:
-            self.scroll_left = True
-        if keys[pygame.K_d]:
-            self.scroll_right = True
-        if keys[pygame.K_w]:
-            self.scroll_up = True
-        if keys[pygame.K_s]:
-            self.scroll_down = True
-        if keys[pygame.K_LSHIFT]:
-            self.scroll_speed = self.max_scroll_speed
-
-        # De-activate scrolling
-        if not keys[pygame.K_a]:
-            self.scroll_left = False
-        if not keys[pygame.K_d]:
-            self.scroll_right = False
-        if not keys[pygame.K_w]:
-            self.scroll_up = False
-        if not keys[pygame.K_s]:
-            self.scroll_down = False
-        if not keys[pygame.K_LSHIFT]:
-            self.scroll_speed = self.base_scroll_speed
+    @staticmethod
+    def restart_self() -> None:
+        map_editor = Editor()
+        map_editor.run()
 
     def scroll_map(self) -> None:
         """
@@ -290,10 +221,10 @@ class Editor:
                                                  size=(self.background.get_width() * scale_factor,
                                                        self.background.get_height() * scale_factor))
 
-    def reset_scale(self) -> None:
+    def set_default_scale(self) -> None:
         """
-            Resets all settings applied through set_overview_scale so
-                regular building view is restored.
+            Resets all settings applied through set_overview_scale to
+                their default so building view is restored.
         """
         self.scale_width = 1
         self.scale_height = 1
@@ -521,114 +452,6 @@ class Editor:
                                BOTTOM_MARGIN),
                          width=0)
 
-    def draw_preset_buttons(self) -> None:
-        """
-            Blits preset buttons to the screen.
-                Sets (Display tle presets)
-        """
-        if self.sets_button.draw():
-            self.displaying_presets = not self.displaying_presets
-
-    def draw_menu_buttons(self) -> None:
-        """
-            Blits menu buttons to the screen.
-                Save (Save current map)
-                Load (Load saved map)
-                Name (Rename current map)
-                Pref (Map preferences)
-        """
-        if self.save_button.draw():
-            helpers.save_map_details(editor=self)
-
-        if self.load_button.draw():
-            self.is_loading_map = True
-            self.is_building = False
-
-        if self.name_button.draw():
-            self.is_changing_name = True
-            self.is_building = False
-
-        if self.pref_button.draw():
-            self.menus.preferences_dict = helpers.get_preferences_dict(editor=self)
-            self.is_building = False
-            self.is_changing_preferences = True
-
-    def get_preference_input(self) -> None:
-        """
-            Listens for keydown events to change the value of a preference.
-        """
-        for events in self.events:
-            if events.type == pygame.KEYDOWN:
-                if events.key == pygame.K_BACKSPACE:
-                    # Delete last character
-                    self.selected_preference_value_change = str(
-                        self.selected_preference_value_change)[:-1]
-
-                elif events.key in range(pygame.K_0, pygame.K_9 + 1):
-                    self.selected_preference_value_change = str(
-                        self.selected_preference_value_change) + events.unicode
-
-    def draw_preference_buttons(self) -> None:
-        # Do not save value and go back
-        if self.back_button.draw():
-            self.is_changing_preferences = False
-            self.is_building = True
-
-            helpers.update_world_data_size(editor=self)
-
-        # Save new value
-        if self.ok_button.draw():
-            if general.is_new_value_allowed(name=self.selected_preference_name,
-                                            value=int(self.selected_preference_value_change)):
-                print(
-                    f"{self.selected_preference_name} changed from {self.selected_preference_value} to {self.selected_preference_value_change}")
-                self.selected_preference_value = self.selected_preference_value_change
-
-                attributes_dict = {
-                    self.selected_preference_name: int(self.selected_preference_value)
-                }
-                helpers.update_class_dict(cls=self,
-                                          attributes=attributes_dict)
-                self.background = helpers.update_background(editor=self)
-                self.menus.preferences_dict = helpers.get_preferences_dict(editor=self)
-
-            else:
-                print(
-                    f"name: '{self.selected_preference_name}' cannot be value: '{self.selected_preference_value_change}"'')
-
-    def get_map_name_input(self) -> None:
-        """
-            Listens for keydown events to change the name of the map.
-        """
-        for events in self.events:
-            if events.type == pygame.KEYDOWN:
-
-                if events.key == pygame.K_BACKSPACE:
-                    # Delete last character
-                    self.temp_map_name = self.temp_map_name[:-1]
-
-                elif events.key == pygame.K_RETURN:
-                    # Exit out
-                    self.is_changing_name = False
-                    self.is_building = True
-                    self.map_name = self.temp_map_name
-
-                else:
-                    # Add new character to end
-                    self.temp_map_name += events.unicode
-
-        # Do not save new map name
-        if self.back_button.draw():
-            self.temp_map_name = self.map_name
-            self.is_changing_name = False
-            self.is_building = True
-
-        # Save new map name
-        if self.ok_button.draw():
-            self.map_name = self.temp_map_name
-            self.is_changing_name = False
-            self.is_building = True
-
     def draw_minimap(self) -> None:
         """
             Blits minimap section and view to the screen.
@@ -686,7 +509,6 @@ class Editor:
             self.events = pygame.event.get()
             self.keys = pygame.key.get_pressed()
             self.mouse_pos = pygame.mouse.get_pos()
-            self.manage_quitting()
 
             pygame.display.set_caption(
                 f"Editing: {self.map_name} @ {int(self.clock.get_fps())} fps")
@@ -701,99 +523,60 @@ class Editor:
             if self.show_grid:
                 self.draw_grid()
 
-            # Panels
-            self.draw_minimap()
-            self.draw_right_panel()
-            self.draw_bottom_panel()
-
-            # Presets & Tiles
-            self.draw_preset_buttons()
-            if self.displaying_presets:
-                self.menus.draw_presets_menu()
-                self.menus.display_presets_previews()
-                selected_preset = self.menus.highlight_selected_preset()
-                if selected_preset is not None:
-                    self.load_new_preset(selected_preset=selected_preset)
-
-            # Quick menu
-            self.manage_undo_redo()
-
-            if self.undo_button.draw():
-                self.undo_tile_placement()
-            if self.redo_button.draw():
-                self.redo_tile_placement()
-            if self.grid_button.draw():
-                self.show_grid = not self.show_grid
-
             if self.show_map_overview:
                 self.draw_map_overview()
             else:
                 self.draw_map()
 
-            if self.map_button.draw():
+            # Panels
+            self.draw_minimap()
+            self.draw_right_panel()
+            self.draw_bottom_panel()
 
-                if not self.show_map_overview:
-                    self.editing_scroll_x = self.scroll_x
-                    self.editing_scroll_y = self.scroll_y
-                    self.scroll_x = 0
-                    self.scroll_y = 0
-                    self.set_overview_scale()
-                else:
-                    self.scroll_x = self.editing_scroll_x
-                    self.scroll_y = self.editing_scroll_y
-                    self.reset_scale()
-
-                self.show_map_overview = not self.show_map_overview
-                self.background = helpers.update_background(editor=self)
-
-            if self.crop_button.draw():
-                self.world_data = general.crop_world_data(world_data=self.world_data)
-                print(len(self.world_data))
-                print(len(self.world_data[0]))
-                print(self._rows)
-                print(self._columns)
-                self._rows = len(self.world_data)
-                self._columns = len(self.world_data[0])
-                self.background = helpers.update_background(editor=self)
-
+            # Events
+            self.event_handler.run()
             # Menus
-            self.draw_menu_buttons()
+            self.menu_handler.run()
 
-            if self.new_button.draw():
-                # self.world_data = general.get_fresh_world_data(columns=self._columns,
-                #                                                rows=self._rows)
-                map_editor = Editor()
-                map_editor.run()
+            # Errors
+            self.error_handler.set_out_of_bounds_error()
+            self.error_handler.display_error_messages()
 
-            if self.is_changing_name:
-                self.screen.fill(DARK_ORANGE)
-                self.menus.draw_rename_menu()
-                self.get_map_name_input()
+            # Quick menu events
+            self.event_handler.undo_redo_events()
 
-            elif self.is_loading_map:
-                self.screen.fill(DARK_ORANGE)
-                self.menus.draw_load_map_menu()
-                selected_map = self.menus.highlight_selected_map()
-                if selected_map is not None:
-                    map_attributes = helpers.deserialize_map_details(editor=self,
-                                                                     map_name=selected_map)
-                    helpers.update_class_dict(cls=self,
-                                              attributes=map_attributes)
+            if self.is_building:
+                # Quick Menu
+                if self.undo_button.draw():
+                    self.undo_tile_placement()
+                if self.redo_button.draw():
+                    self.redo_tile_placement()
+                if self.grid_button.draw():
+                    self.show_grid = not self.show_grid
 
-            elif self.is_changing_preferences:
-                self.screen.fill(DARK_ORANGE)
-                self.menus.draw_preferences_menu()
-                self.get_preference_input()
-                self.draw_preference_buttons()
-                selected_preference = self.menus.highlight_selected_preference()
-                if selected_preference is not None:
-                    self.selected_preference_name = selected_preference[0]
-                    self.selected_preference_value = selected_preference[1]
-                    self.selected_preference_value_change = self.selected_preference_value
+                if self.map_button.draw():
 
-            # Building
-            elif self.is_building:
-                self.manage_scrolling()
+                    if not self.show_map_overview:
+                        self.editing_scroll_x = self.scroll_x
+                        self.editing_scroll_y = self.scroll_y
+                        self.scroll_x = 0
+                        self.scroll_y = 0
+                        self.set_overview_scale()
+                    else:
+                        self.scroll_x = self.editing_scroll_x
+                        self.scroll_y = self.editing_scroll_y
+                        self.set_default_scale()
+
+                    self.show_map_overview = not self.show_map_overview
+                    self.background = helpers.update_background(editor=self)
+
+                if self.crop_button.draw():
+                    self.world_data = general.crop_world_data(world_data=self.world_data)
+                    self._rows = len(self.world_data)
+                    self._columns = len(self.world_data[0])
+                    self.background = helpers.update_background(editor=self)
+
+                # Actual building
                 self.scroll_map()
                 if not self.displaying_presets:
                     # Tile selection
@@ -801,10 +584,6 @@ class Editor:
                     self.draw_tile_labels()
                     self.highlight_selected_tile()
                     self.place_and_remove_tiles()
-
-            # Errors
-            self.error_handler.set_out_of_bounds_error()
-            self.error_handler.display_error_messages()
 
             pygame.display.update()
             self.clock.tick(FPS)
