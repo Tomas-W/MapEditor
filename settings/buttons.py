@@ -46,6 +46,9 @@ GRID_BUTTON_Y = LOAD_BUTTON_Y
 MAP_BUTTON_X = REDO_BUTTON_X
 MAP_BUTTON_Y = LOAD_BUTTON_Y
 
+CROP_BUTTON_X = REDO_BUTTON_X
+CROP_BUTTON_Y = NEW_BUTTON_Y
+
 # Presets
 SETS_BTN = {
     "x": SETS_BUTTON_X,
@@ -144,4 +147,12 @@ REDO_BTN = {
     "image": redo_button_image,
     "scale": 1,
     "name": "redo_btn",
+}
+
+CROP_BTN = {
+    "x": CROP_BUTTON_X,
+    "y": CROP_BUTTON_Y,
+    "image": crop_button_image,
+    "scale": 1,
+    "name": "crop_btn",
 }

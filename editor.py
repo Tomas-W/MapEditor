@@ -129,6 +129,8 @@ class Editor:
                                                       **UNDO_BTN)
         self.redo_button = buttons.get_utility_button(editor=self,
                                                       **REDO_BTN)
+        self.crop_button = buttons.get_utility_button(editor=self,
+                                                      **CROP_BTN)
 
         # States
         self.is_running = True
@@ -547,6 +549,7 @@ class Editor:
             self.is_building = False
 
         if self.pref_button.draw():
+            self.menus.preferences_dict = helpers.get_preferences_dict(editor=self)
             self.is_building = False
             self.is_changing_preferences = True
 
@@ -728,11 +731,7 @@ class Editor:
                 self.draw_map()
 
             if self.map_button.draw():
-                self.world_data = general.crop_world_data(world_data=self.world_data)
-                print(len(self.world_data))
-                print(len(self.world_data[0]))
-                self._rows = len(self.world_data)
-                self._columns = len(self.world_data[0])
+
                 if not self.show_map_overview:
                     self.editing_scroll_x = self.scroll_x
                     self.editing_scroll_y = self.scroll_y
@@ -747,14 +746,25 @@ class Editor:
                 self.show_map_overview = not self.show_map_overview
                 self.background = helpers.update_background(editor=self)
 
+            if self.crop_button.draw():
+                self.world_data = general.crop_world_data(world_data=self.world_data)
+                print(len(self.world_data))
+                print(len(self.world_data[0]))
+                print(self._rows)
+                print(self._columns)
+                self._rows = len(self.world_data)
+                self._columns = len(self.world_data[0])
+                self.background = helpers.update_background(editor=self)
+
+            # Menus
+            self.draw_menu_buttons()
+
             if self.new_button.draw():
                 # self.world_data = general.get_fresh_world_data(columns=self._columns,
                 #                                                rows=self._rows)
                 map_editor = Editor()
                 map_editor.run()
 
-            # Menus
-            self.draw_menu_buttons()
             if self.is_changing_name:
                 self.screen.fill(DARK_ORANGE)
                 self.menus.draw_rename_menu()

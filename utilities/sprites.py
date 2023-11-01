@@ -47,6 +47,8 @@ undo_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "undo_btn.png")).convert_alpha()
 redo_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "redo_btn.png")).convert_alpha()
+crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "crop_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

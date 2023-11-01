@@ -55,24 +55,20 @@ def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
         Returns:
             Tuple[int, int]: Number of rows and columns that can be safely removed.
     """
-    rows_to_remove = 0
+    rows_to_keep = len(world_data)
     for row in world_data[::-1]:
         if all(index == -1 for index in row):
-            rows_to_remove += 1
+            rows_to_keep -= 1
         else:
             break
 
-    remove = 0
+    cols_to_keep = 0
     for row in world_data:
-        cols_ = 0
         for i, col in enumerate(row):
             if col != -1:
-                cols_ = i
-        remove = max(remove, cols_)
+                cols_to_keep = max(cols_to_keep, i + 1)
 
-    cols_to_remove = len(world_data[0]) - 1 - remove
-
-    return rows_to_remove, cols_to_remove
+    return rows_to_keep, cols_to_keep
 
 
 def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
@@ -85,19 +81,23 @@ def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
         Returns:
             List[List[int]]: Cropped version of world_data
     """
-    rows, cols = get_grid_max_row_col(world_data=world_data)
-    row_slicer = -rows
-    col_slicer = -cols
+    old_rows, old_cols = len(world_data), len(world_data[0])
+    new_rows, new_cols = get_grid_max_row_col(world_data=world_data)
 
-    if rows > 0:
-        world_data = world_data[:row_slicer]
+    min_rows = GRID_PREFERENCES_DICT["_rows"]["min"]
+    min_cols = GRID_PREFERENCES_DICT["_columns"]["min"]
+    # User tries to crop map smaller than min map size
+    if new_rows < min_rows:
+        new_rows = min_rows
 
-    if cols > 0:
-        new_world_data = []
-        for row in world_data:
-            new_world_data.append(row[:col_slicer])
-    else:
-        new_world_data = world_data
+    if new_cols < min_cols:
+        new_cols = min_cols
+
+    world_data = world_data[:new_rows]
+
+    new_world_data = []
+    for row in world_data:
+        new_world_data.append(row[:new_cols])
 
     return new_world_data
 
