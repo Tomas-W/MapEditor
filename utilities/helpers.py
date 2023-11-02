@@ -107,7 +107,6 @@ def deserialize_map_details(editor: any,
         "world_data": world_data,
         "background": background,
 
-        "is_loading_map": False,
         "is_building": True,
     }
 

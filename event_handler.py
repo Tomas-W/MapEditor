@@ -83,10 +83,25 @@ class EventHandler:
 
                 elif events.key == pygame.K_RETURN:
                     # Exit out
-                    self.editor.is_changing_name = False
+                    self.editor.is_renaming_map = False
                     self.editor.is_building = True
                     self.editor.map_name = self.editor.temp_map_name
 
                 else:
                     # Add new character to end
                     self.editor.temp_map_name += events.unicode
+
+    def get_preference_input(self) -> None:
+        """
+            Listens for keydown events to change the value of a preference.
+        """
+        for events in self.editor.events:
+            if events.type == pygame.KEYDOWN:
+                if events.key == pygame.K_BACKSPACE:
+                    # Delete last character
+                    self.editor.selected_preference_value_change = str(
+                        self.editor.selected_preference_value_change)[:-1]
+
+                elif events.key in range(pygame.K_0, pygame.K_9 + 1):
+                    self.editor.selected_preference_value_change = str(
+                        self.editor.selected_preference_value_change) + events.unicode

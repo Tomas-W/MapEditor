@@ -10,23 +10,33 @@ BUTTON_MARGIN_Y = 16
 SETS_BUTTON_X = SCREEN_WIDTH + RIGHT_MARGIN // 2 - BUTTON_WIDTH // 2
 SETS_BUTTON_Y = BUTTON_HEIGHT // 2
 
-# Menu
-SAVE_BUTTON_X = BUTTON_MARGIN_X
-SAVE_BUTTON_Y = SCREEN_HEIGHT + BUTTON_MARGIN_Y
+# File Menu
+FILE_BUTTON_X = BUTTON_MARGIN_X
+FILE_BUTTON_Y = SCREEN_HEIGHT + BUTTON_MARGIN_Y
 
-LOAD_BUTTON_X = SAVE_BUTTON_X
-LOAD_BUTTON_Y = SAVE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
+SAVE_BUTTON_X = FILE_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X * 2
+SAVE_BUTTON_Y = FILE_BUTTON_Y
 
-NEW_BUTTON_X = SAVE_BUTTON_X
-NEW_BUTTON_Y = LOAD_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
+LOAD_BUTTON_X = SAVE_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X
+LOAD_BUTTON_Y = SAVE_BUTTON_Y
 
-NAME_BUTTON_X = SAVE_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X
-NAME_BUTTON_Y = SAVE_BUTTON_Y
+NAME_BUTTON_X = SAVE_BUTTON_X
+NAME_BUTTON_Y = SAVE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 
-PREF_BUTTON_X = NAME_BUTTON_X
-PREF_BUTTON_Y = LOAD_BUTTON_Y
+NEW_BUTTON_X = LOAD_BUTTON_X
+NEW_BUTTON_Y = NAME_BUTTON_Y
 
-# Extra Menu
+# Edit Menu
+EDIT_BUTTON_X = FILE_BUTTON_X
+EDIT_BUTTON_Y = FILE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
+
+PREF_BUTTON_X = EDIT_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X * 2
+PREF_BUTTON_Y = FILE_BUTTON_Y
+
+CROP_BUTTON_X = PREF_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X
+CROP_BUTTON_Y = PREF_BUTTON_Y
+
+# General Menu
 BACK_BUTTON_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 - BUTTON_WIDTH * 1.25
 BACK_BUTTON_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - 50
 
@@ -41,13 +51,10 @@ REDO_BUTTON_X = SCREEN_WIDTH - BUTTON_WIDTH - BUTTON_MARGIN_X
 REDO_BUTTON_Y = SAVE_BUTTON_Y
 
 GRID_BUTTON_X = UNDO_BUTTON_X
-GRID_BUTTON_Y = LOAD_BUTTON_Y
+GRID_BUTTON_Y = LOAD_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 
 MAP_BUTTON_X = REDO_BUTTON_X
-MAP_BUTTON_Y = LOAD_BUTTON_Y
-
-CROP_BUTTON_X = REDO_BUTTON_X
-CROP_BUTTON_Y = NEW_BUTTON_Y
+MAP_BUTTON_Y = GRID_BUTTON_Y
 
 # Presets
 SETS_BTN = {
@@ -58,7 +65,15 @@ SETS_BTN = {
     "name": "sets_btn",
 }
 
-# Meun
+# File Menu
+FILE_BTN = {
+    "x": FILE_BUTTON_X,
+    "y": FILE_BUTTON_Y,
+    "image": file_button_image,
+    "scale": 1,
+    "name": "file_btn",
+}
+
 SAVE_BTN = {
     "x": SAVE_BUTTON_X,
     "y": SAVE_BUTTON_Y,
@@ -91,6 +106,14 @@ NAME_BTN = {
     "name": "name_btn",
 }
 
+# Edit Menu
+EDIT_BTN = {
+    "x": EDIT_BUTTON_X,
+    "y": EDIT_BUTTON_Y,
+    "image": edit_button_image,
+    "scale": 1,
+    "name": "edit_btn",
+}
 PREF_BTN = {
     "x": PREF_BUTTON_X,
     "y": PREF_BUTTON_Y,
@@ -99,7 +122,15 @@ PREF_BTN = {
     "name": "pref_btn",
 }
 
-#  Extra Menu
+CROP_BTN = {
+    "x": CROP_BUTTON_X,
+    "y": CROP_BUTTON_Y,
+    "image": crop_button_image,
+    "scale": 1,
+    "name": "crop_btn",
+}
+
+# General Menu
 BACK_BTN = {
     "x": BACK_BUTTON_X,
     "y": BACK_BUTTON_Y,
@@ -117,22 +148,6 @@ OK_BTN = {
 }
 
 # Quick Menu
-GRID_BTN = {
-    "x": GRID_BUTTON_X,
-    "y": GRID_BUTTON_Y,
-    "image": grid_button_image,
-    "scale": 1,
-    "name": "grid_btn",
-}
-
-MAP_BTN = {
-    "x": MAP_BUTTON_X,
-    "y": MAP_BUTTON_Y,
-    "image": map_button_image,
-    "scale": 1,
-    "name": "map_btn",
-}
-
 UNDO_BTN = {
     "x": UNDO_BUTTON_X,
     "y": UNDO_BUTTON_Y,
@@ -149,10 +164,22 @@ REDO_BTN = {
     "name": "redo_btn",
 }
 
-CROP_BTN = {
-    "x": CROP_BUTTON_X,
-    "y": CROP_BUTTON_Y,
-    "image": crop_button_image,
+GRID_BTN = {
+    "x": GRID_BUTTON_X,
+    "y": GRID_BUTTON_Y,
+    "image": grid_button_image,
     "scale": 1,
-    "name": "crop_btn",
+    "name": "grid_btn",
 }
+
+MAP_BTN = {
+    "x": MAP_BUTTON_X,
+    "y": MAP_BUTTON_Y,
+    "image": map_button_image,
+    "scale": 1,
+    "name": "map_btn",
+}
+
+
+
+

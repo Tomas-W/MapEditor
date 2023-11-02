@@ -15,40 +15,46 @@ background_img = pygame.transform.scale(
     pygame.image.load(os.path.join(IMAGES_DIR, "grass.png")).convert(),
     (COLUMNS * GRID_SIZE_X, ROWS * GRID_SIZE_Y))
 
-# Menu buttons
+# Presets Button
 sets_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "sets_btn.png")).convert_alpha()
 
+# File Menu buttons
+file_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "file_btn.png")).convert_alpha()
 save_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "save_btn.png")).convert_alpha()
 
 load_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "load_btn.png")).convert_alpha()
-
+new_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                  "new_btn.png")).convert_alpha()
 name_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "name_btn.png")).convert_alpha()
 
+# Edit Menu buttons
+edit_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "edit_btn.png")).convert_alpha()
+crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "crop_btn.png")).convert_alpha()
 pref_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "pref_btn.png")).convert_alpha()
+
+# General Menu buttons
 back_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "back_btn.png")).convert_alpha()
-
 ok_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                  "ok_btn.png")).convert_alpha()
 
 # Quick Menu buttons
-grid_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                   "grid_btn.png")).convert_alpha()
-map_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                  "map_btn.png")).convert_alpha()
-new_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                  "new_btn.png")).convert_alpha()
 undo_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "undo_btn.png")).convert_alpha()
 redo_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "redo_btn.png")).convert_alpha()
-crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                   "crop_btn.png")).convert_alpha()
+grid_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "grid_btn.png")).convert_alpha()
+map_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                  "map_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

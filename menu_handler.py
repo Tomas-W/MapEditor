@@ -23,7 +23,7 @@ class MenuHandler:
         self.event_handler = self.editor.event_handler
 
         self.preferences_dict: OrderedDict = self.get_preferences_dict()
-        self.preferences_outline_recs: List[pygame.rect.Rect] = self.get_preferences_outline_recs()
+        self.preferences_outline_recs: List[pygame.rect.Rect] = []
 
         self.saved_maps_names: List[str] = self.get_saved_maps_names()
         self.saved_maps_ouline_rects: List[pygame.rect.Rect] = []
@@ -32,63 +32,131 @@ class MenuHandler:
         self.shortened_preset_names: List[str] = self.get_shortened_presets_dir_names()
         self.preset_names_outline_rects: List[pygame.rect.Rect] = []
 
-        # Menu buttons
+        # Preset Menu
         self.sets_button = buttons.get_utility_button(editor=self.editor,
                                                       **SETS_BTN)
+        # File Menu buttons
+        self.file_button = buttons.get_utility_button(editor=self.editor,
+                                                      **FILE_BTN)
         self.save_button = buttons.get_utility_button(editor=self.editor,
                                                       **SAVE_BTN)
         self.load_button = buttons.get_utility_button(editor=self.editor,
                                                       **LOAD_BTN)
-        self.new_button = buttons.get_utility_button(editor=self.editor,
-                                                     **NEW_BTN)
         self.name_button = buttons.get_utility_button(editor=self.editor,
                                                       **NAME_BTN)
+        self.new_button = buttons.get_utility_button(editor=self.editor,
+                                                     **NEW_BTN)
+
+        # Edit Menu
+        self.edit_button = buttons.get_utility_button(editor=self.editor,
+                                                      **EDIT_BTN)
         self.pref_button = buttons.get_utility_button(editor=self.editor,
                                                       **PREF_BTN)
-        # Extra Menu buttons
+        self.crop_button = buttons.get_utility_button(editor=self.editor,
+                                                      **CROP_BTN)
+
+        # General Menu buttons
         self.back_button = buttons.get_utility_button(editor=self.editor,
                                                       **BACK_BTN)
         self.ok_button = buttons.get_utility_button(editor=self.editor,
                                                     **OK_BTN)
 
         self.clicked = False
-        self.restart_self = False
+
+        self.is_saving_map = False
+        self.is_loading_map = False
+        self.is_renaming_map = False
+        self.is_restarting_map = False
+
+        self.is_changing_preferences = False
+        self.is_cropping_map = False
+
+    def set_state(self,
+                  state: str) -> None:
+        match state:
+
+            case "reset":
+                self.editor.is_building = True
+
+                self.is_saving_map = False
+                self.is_loading_map = False
+                self.is_renaming_map = False
+                self.is_restarting_map = False
+
+                self.is_changing_preferences = False
+                self.is_cropping_map = False
+
+            case "building":
+                self.set_state("reset")
+                self.editor.is_building = True
+
+            case "file_menu":
+                self.editor.is_in_file_menu = not self.editor.is_in_file_menu
+                self.editor.is_in_edit_menu = False
+
+            case "edit_menu":
+                self.editor.is_in_edit_menu = not self.editor.is_in_edit_menu
+                self.editor.is_in_file_menu = False
+
+            case "saving_map":
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_saving_map = True
+
+            case "loading_map":
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_loading_map = True
+
+            case "renaming_map":
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_renaming_map = True
+
+            case "restart_map":
+                self.is_restarting_map = not self.is_restarting_map
+
+            case "changing_prefs":
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_changing_preferences = True
+
+            case "cropping_map":
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_cropping_map = True
 
     def run(self) -> None:
 
         self.draw_presets_button()
         self.draw_menu_buttons()
 
-        if self.restart_self:
-            self.restart_self = False
-            self.editor.restart_self()
+        if self.editor.displaying_presets:
+            self.draw_presets_menu()
 
-        if self.editor.is_changing_name:
-            self.editor.screen.fill(DARK_ORANGE)
-            self.draw_rename_menu()
-            self.event_handler.get_map_name_input()
-            self.draw_map_name_btns()
+        if self.editor.is_in_file_menu:
+            self.draw_file_menu()
 
-        elif self.editor.is_loading_map:
-            self.editor.screen.fill(DARK_ORANGE)
+        elif self.editor.is_in_edit_menu:
+            self.draw_edit_menu()
+
+        if self.is_saving_map:
+            self.draw_save_map_menu()
+
+        elif self.is_loading_map:
             self.draw_load_map_menu()
-            selected_map = self.highlight_selected_map()
-            if selected_map is not None:
-                map_attributes = helpers.deserialize_map_details(editor=self.editor,
-                                                                 map_name=selected_map)
-                helpers.update_class_dict(cls=self.editor,
-                                          attributes=map_attributes)
 
-        elif self.editor.is_changing_preferences:
-            self.editor.screen.fill(DARK_ORANGE)
+        elif self.is_restarting_map:
+            self.draw_restart_map_menu()
+
+        elif self.is_renaming_map:
+            self.draw_rename_map_menu()
+
+        elif self.is_changing_preferences:
             self.draw_preferences_menu()
-            self.get_preference_input()
-            self.draw_preference_buttons()
-            selected_preference = self.highlight_selected_preference()
-            if selected_preference is not None:
-                self.editor.selected_preference_name = selected_preference[0]
-                self.editor.selected_preference_value = selected_preference[1]
-                self.editor.selected_preference_value_change = self.editor.selected_preference_value
+
+        elif self.is_cropping_map:
+            self.draw_crop_menu()
 
     def draw_presets_button(self) -> None:
         """
@@ -97,51 +165,98 @@ class MenuHandler:
         if self.sets_button.draw():
             self.editor.displaying_presets = not self.editor.displaying_presets
 
-    def draw_menu_buttons(self) -> None:
-        """
-            Blits menu buttons to the screen.
-                Save (Save current map)
-                Load (Load saved map)
-                Name (Rename current map)
-                Pref (Map preferences)
-        """
-        if self.new_button.draw():
-            self.restart_self = True
+    def draw_presets_menu(self) -> None:
+        self.display_presets()
+        self.display_presets_previews()
+        selected_preset = self.highlight_selected_preset()
+        if selected_preset is not None:
+            self.editor.load_new_preset(selected_preset=selected_preset)
 
+    def draw_menu_buttons(self) -> None:
+        if self.file_button.draw():
+            self.set_state("file_menu")
+
+        if self.edit_button.draw():
+            self.set_state("edit_menu")
+
+    def draw_file_menu(self) -> None:
         if self.save_button.draw():
-            helpers.save_map_details(editor=self.editor)
+            self.set_state("saving_map")
 
         if self.load_button.draw():
-            self.editor.is_loading_map = True
-            self.editor.is_building = False
+            self.set_state("loading_map")
 
         if self.name_button.draw():
-            self.editor.is_changing_name = True
-            self.editor.is_building = False
+            self.set_state("renaming_map")
 
+        if self.new_button.draw():
+            self.set_state("restart_map")
+
+    def draw_edit_menu(self) -> None:
         if self.pref_button.draw():
-            self.editor.is_building = False
-            self.editor.is_changing_preferences = True
+            self.preferences_dict = self.get_preferences_dict()
+            self.editor.selected_preference_value = self.editor._rows
+            self.editor.selected_preference_value_change = self.editor._rows
+            self.set_state("changing_prefs")
 
-        if self.editor.displaying_presets:
-            self.draw_presets_menu()
-            self.display_presets_previews()
-            selected_preset = self.highlight_selected_preset()
-            if selected_preset is not None:
-                self.editor.load_new_preset(selected_preset=selected_preset)
+        if self.crop_button.draw():
+            self.set_state("cropping_map")
+
+    def draw_save_map_menu(self) -> None:
+        helpers.save_map_details(editor=self.editor)
+        self.set_state("reset")
+
+    def draw_load_map_menu(self) -> None:
+        self.editor.screen.fill(DARK_ORANGE)
+        self.display_map_names()
+        selected_map = self.highlight_selected_map()
+        if selected_map is not None:
+            map_attributes = helpers.deserialize_map_details(editor=self.editor,
+                                                             map_name=selected_map)
+            helpers.update_class_dict(cls=self.editor,
+                                      attributes=map_attributes)
+            self.is_loading_map = False
+            self.editor.is_building = True
+
+    def draw_rename_map_menu(self) -> None:
+        self.editor.screen.fill(DARK_ORANGE)
+        self.draw_rename_menu()
+        self.event_handler.get_map_name_input()
+        self.draw_map_name_btns()
+
+    def draw_restart_map_menu(self) -> None:
+        self.set_state("restart_map")
+        self.editor.restart_self()
+
+    def draw_preferences_menu(self) -> None:
+        self.editor.screen.fill(DARK_ORANGE)
+        self.display_preferences()
+        self.event_handler.get_preference_input()
+        self.draw_preference_buttons()
+        selected_preference = self.highlight_selected_preference()
+        if selected_preference is not None:
+            self.editor.selected_preference_name = selected_preference[0]
+            self.editor.selected_preference_value = selected_preference[1]
+            self.editor.selected_preference_value_change = self.editor.selected_preference_value
+
+    def draw_crop_menu(self) -> None:
+        self.editor.world_data = general.crop_world_data(world_data=self.editor.world_data)
+        self.editor._rows = len(self.editor.world_data)
+        self.editor._columns = len(self.editor.world_data[0])
+        self.editor.background = helpers.update_background(editor=self.editor)
 
     def draw_preference_buttons(self) -> None:
         # Do not save value and go back
         if self.back_button.draw():
-            self.editor.is_changing_preferences = False
-            self.editor.is_building = True
+            self.set_state("reset")
 
             helpers.update_world_data_size(editor=self.editor)
 
         # Save new value
         if self.ok_button.draw():
             if general.is_new_value_allowed(name=self.editor.selected_preference_name,
-                                            value=int(self.editor.selected_preference_value_change)):
+                                            value=int(
+                                                self.editor.selected_preference_value_change)):
                 print(
                     f"{self.editor.selected_preference_name} changed from {self.editor.selected_preference_value} to {self.editor.selected_preference_value_change}")
                 self.editor.selected_preference_value = self.editor.selected_preference_value_change
@@ -158,33 +273,16 @@ class MenuHandler:
                 print(
                     f"name: '{self.editor.selected_preference_name}' cannot be value: '{self.editor.selected_preference_value_change}"'')
 
-    def get_preference_input(self) -> None:
-        """
-            Listens for keydown events to change the value of a preference.
-        """
-        for events in self.editor.events:
-            if events.type == pygame.KEYDOWN:
-                if events.key == pygame.K_BACKSPACE:
-                    # Delete last character
-                    self.editor.selected_preference_value_change = str(
-                        self.editor.selected_preference_value_change)[:-1]
-
-                elif events.key in range(pygame.K_0, pygame.K_9 + 1):
-                    self.editor.selected_preference_value_change = str(
-                        self.editor.selected_preference_value_change) + events.unicode
-
     def draw_map_name_btns(self):
         # Do not save new map name
         if self.back_button.draw():
             self.editor.temp_map_name = self.editor.map_name
-            self.editor.is_changing_name = False
-            self.editor.is_building = True
+            self.set_state("reset")
 
         # Save new map name
         if self.ok_button.draw():
             self.editor.map_name = self.editor.temp_map_name
-            self.editor.is_changing_name = False
-            self.editor.is_building = True
+            self.set_state("reset")
 
     def get_preferences_dict(self) -> OrderedDict[str, int]:
         # noinspection PyProtectedMember
@@ -194,10 +292,6 @@ class MenuHandler:
             ("_grid_size_x", self.editor._grid_size_x),
             ("_grid_size_y", self.editor._grid_size_y)])
         return preferences_dict
-
-
-    def get_preferences_outline_recs(self) -> List[pygame.rect.Rect]:
-        return []
 
     @staticmethod
     def get_saved_maps_names() -> List[str]:
@@ -235,7 +329,7 @@ class MenuHandler:
 
         return names
 
-    def draw_preferences_menu(self) -> None:
+    def display_preferences(self) -> None:
         """
             Blits preferences text and value to the screen.
 
@@ -303,7 +397,7 @@ class MenuHandler:
                 )
                 if pygame.mouse.get_pressed()[0] == 1:
                     self.editor.selected_preference_value_change = \
-                    list(self.preferences_dict.items())[i][-1]
+                        list(self.preferences_dict.items())[i][-1]
 
                     return list(self.preferences_dict.items())[i]
 
@@ -335,7 +429,7 @@ class MenuHandler:
                                 y_pos=CHANGE_NAME_Y,
                                 color=CHANGE_NAME_COLOR)
 
-    def draw_load_map_menu(self) -> None:
+    def display_map_names(self) -> None:
         """
             Blits load map text and name of the maps to the screen.
 
@@ -399,7 +493,7 @@ class MenuHandler:
 
         return None
 
-    def draw_presets_menu(self) -> None:
+    def display_presets(self) -> None:
         """
             Blits presets menu to the screen.
 
@@ -428,6 +522,24 @@ class MenuHandler:
             presets_rects_outlines.append(text_rect)
 
         self.preset_names_outline_rects = presets_rects_outlines
+
+    def display_presets_previews(self) -> None:
+        """
+            Shows a preview of the first image in the displayed presets-folder next to its name.
+
+            Returns:
+                None
+        """
+        for i, name in enumerate(self.preset_names):
+            preview_img = pygame.transform.scale(
+                surface=sprites.get_preview_image(preset_name=name),
+                size=(PREVIEW_WIDTH,
+                      PREVIEW_HEIGHT))
+            self.editor.screen.blit(source=preview_img,
+                                    dest=(
+                                        PREVIEW_X,
+                                        PREVIEW_Y + i * PRESETS_NAME_Y_SPACING
+                                    ))
 
     def highlight_selected_preset(self) -> Union[None, str]:
         """
@@ -465,21 +577,3 @@ class MenuHandler:
                     self.clicked = False
 
         return None
-
-    def display_presets_previews(self) -> None:
-        """
-            Shows a preview of the first image in the displayed presets-folder next to its name.
-
-            Returns:
-                None
-        """
-        for i, name in enumerate(self.preset_names):
-            preview_img = pygame.transform.scale(
-                surface=sprites.get_preview_image(preset_name=name),
-                size=(PREVIEW_WIDTH,
-                      PREVIEW_HEIGHT))
-            self.editor.screen.blit(source=preview_img,
-                                    dest=(
-                                        PREVIEW_X,
-                                        PREVIEW_Y + i * PRESETS_NAME_Y_SPACING
-                                    ))

@@ -78,8 +78,6 @@ class Editor:
                                                       **UNDO_BTN)
         self.redo_button = buttons.get_utility_button(editor=self,
                                                       **REDO_BTN)
-        self.crop_button = buttons.get_utility_button(editor=self,
-                                                      **CROP_BTN)
 
         # Preferences
         self.selected_preference_name = "_rows"
@@ -115,9 +113,8 @@ class Editor:
         # States
         self.is_running = True
         self.is_building = True
-        self.is_changing_name = False
-        self.is_loading_map = False
-        self.is_changing_preferences = False
+        self.is_in_file_menu = False
+        self.is_in_edit_menu = False
 
         # Quick menu
         self.show_grid = True
@@ -130,8 +127,11 @@ class Editor:
 
         self.test = 100
 
+    def __repr__(self):
+        return f"EDITOR INSTANCE {self._rows, self._columns}"
+
     def __str__(self) -> str:
-        return "Editor instance"
+        return f"Editing: {self.map_name}"
 
     @staticmethod
     def restart_self() -> None:
@@ -568,12 +568,6 @@ class Editor:
                         self.set_default_scale()
 
                     self.show_map_overview = not self.show_map_overview
-                    self.background = helpers.update_background(editor=self)
-
-                if self.crop_button.draw():
-                    self.world_data = general.crop_world_data(world_data=self.world_data)
-                    self._rows = len(self.world_data)
-                    self._columns = len(self.world_data[0])
                     self.background = helpers.update_background(editor=self)
 
                 # Actual building
