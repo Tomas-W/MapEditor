@@ -40,13 +40,13 @@ class Editor:
         self.background = sprites.background_img
         self.og_background_size = self.background.get_size()
 
-        self._rows = ROWS
-        self._columns = COLUMNS
-        self._grid_size_x = GRID_SIZE_X
-        self._grid_size_y = GRID_SIZE_Y
+        self.rows = ROWS
+        self.columns = COLUMNS
+        self.grid_size_x = GRID_SIZE_X
+        self.grid_size_y = GRID_SIZE_Y
         self.world_data: List[List[int]] = general.get_fresh_world_data(
-            columns=self._columns,
-            rows=self._rows
+            columns=self.columns,
+            rows=self.rows
         )
 
         # Scrolling
@@ -80,15 +80,14 @@ class Editor:
                                                       **REDO_BTN)
 
         # Preferences
-        self.selected_preference_name = "_rows"
-        self.selected_preference_value = self._rows
-        self.selected_preference_value_change = self._rows
+        self.selected_preference_name = "rows"
+        self.selected_preference_value = self.rows
+        self.selected_preference_value_change = self.rows
 
         # Presets
         self.preset_names: List[str] = self.menu_handler.preset_names
         self.shortened_preset_names: List[str] = self.menu_handler.shortened_preset_names
         self.current_preset: str = self.preset_names[0]
-        self.displaying_presets = False
 
         # Tiles
         self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
@@ -116,6 +115,9 @@ class Editor:
         self.is_in_file_menu = False
         self.is_in_edit_menu = False
 
+        # Presets
+        self.is_displaying_presets = False
+
         # Quick menu
         self.show_grid = True
         self.scale_width = 1
@@ -128,7 +130,7 @@ class Editor:
         self.test = 100
 
     def __repr__(self):
-        return f"EDITOR INSTANCE {self._rows, self._columns}"
+        return f"EDITOR INSTANCE {self.rows, self.columns}"
 
     def __str__(self) -> str:
         return f"Editing: {self.map_name}"
@@ -172,18 +174,18 @@ class Editor:
                 grid size settings.
         """
         # Horizontal lines
-        for x in range(self._rows + 1):
+        for x in range(self.rows + 1):
             pygame.draw.line(surface=self.screen,
                              color=GRID_LINE_COLOR,
-                             start_pos=(0, x * self._grid_size_y + self.scroll_y),
-                             end_pos=(SCREEN_WIDTH, x * self._grid_size_y + self.scroll_y))
+                             start_pos=(0, x * self.grid_size_y + self.scroll_y),
+                             end_pos=(SCREEN_WIDTH, x * self.grid_size_y + self.scroll_y))
 
         # Vertical lines
-        for y in range(self._columns + 1):
+        for y in range(self.columns + 1):
             pygame.draw.line(surface=self.screen,
                              color=GRID_LINE_COLOR,
-                             start_pos=(y * self._grid_size_x + self.scroll_x, 0),
-                             end_pos=(y * self._grid_size_x + self.scroll_x, SCREEN_HEIGHT))
+                             start_pos=(y * self.grid_size_x + self.scroll_x, 0),
+                             end_pos=(y * self.grid_size_x + self.scroll_x, SCREEN_HEIGHT))
 
     def draw_map(self) -> None:
         """
@@ -193,18 +195,16 @@ class Editor:
             for y, tile in enumerate(row):
                 if tile > -1:
                     self.screen.blit(source=self.level_objects[tile],
-                                     dest=(y * self._grid_size_x + self.scroll_x,
-                                           x * self._grid_size_x + self.scroll_y))
+                                     dest=(y * self.grid_size_x + self.scroll_x,
+                                           x * self.grid_size_x + self.scroll_y))
 
     def set_overview_scale(self) -> None:
         """
             Calculate size difference between view area and map.
             Applies scaling to necessary settings.
         """
-        # noinspection PyProtectedMember
-        map_width = self._columns * self._grid_size_x
-        # noinspection PyProtectedMember
-        map_height = self._rows * self._grid_size_y
+        map_width = self.columns * self.grid_size_x
+        map_height = self.rows * self.grid_size_y
 
         self.scale_width = SCREEN_WIDTH / map_width
         self.scale_height = SCREEN_HEIGHT / map_height
@@ -214,8 +214,8 @@ class Editor:
         else:
             scale_factor = self.scale_height
 
-        self._grid_size_x = GRID_SIZE_X * scale_factor
-        self._grid_size_y = GRID_SIZE_Y * scale_factor
+        self.grid_size_x = GRID_SIZE_X * scale_factor
+        self.grid_size_y = GRID_SIZE_Y * scale_factor
 
         self.background = pygame.transform.scale(surface=self.background,
                                                  size=(self.background.get_width() * scale_factor,
@@ -229,8 +229,8 @@ class Editor:
         self.scale_width = 1
         self.scale_height = 1
 
-        self._grid_size_x = GRID_SIZE_X
-        self._grid_size_y = GRID_SIZE_Y
+        self.grid_size_x = GRID_SIZE_X
+        self.grid_size_y = GRID_SIZE_Y
 
         self.background = pygame.transform.scale(surface=self.background,
                                                  size=self.og_background_size)
@@ -248,8 +248,8 @@ class Editor:
                                                   int(self.scale_height * self.level_objects[
                                                       tile].get_height())))
                     self.screen.blit(source=img,
-                                     dest=(y * self._grid_size_x + self.scroll_x,
-                                           x * self._grid_size_y + self.scroll_y))
+                                     dest=(y * self.grid_size_x + self.scroll_x,
+                                           x * self.grid_size_y + self.scroll_y))
 
     def draw_right_panel(self) -> None:
         """
@@ -286,7 +286,7 @@ class Editor:
             preset_name=self.current_preset,
             editor=self
         )
-        self.displaying_presets = False
+        self.is_displaying_presets = False
 
     def draw_and_select_tile(self) -> None:
         """
@@ -412,8 +412,8 @@ class Editor:
                 removes tile in current grid location.
         """
         mouse_pos = self.mouse_pos
-        x = int((mouse_pos[0] - self.scroll_x) / self._grid_size_x)
-        y = int((mouse_pos[1] - self.scroll_y) / self._grid_size_y)
+        x = int((mouse_pos[0] - self.scroll_x) / self.grid_size_x)
+        y = int((mouse_pos[1] - self.scroll_y) / self.grid_size_y)
 
         # Check if within map canvas
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
@@ -572,7 +572,7 @@ class Editor:
 
                 # Actual building
                 self.scroll_map()
-                if not self.displaying_presets:
+                if not self.is_displaying_presets:
                     # Tile selection
                     self.draw_and_select_tile()
                     self.draw_tile_labels()

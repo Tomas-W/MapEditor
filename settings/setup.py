@@ -17,19 +17,19 @@ GRID_SIZE_Y = 32
 MAX_TILE_TRACKING = 500
 
 GRID_PREFERENCES_DICT = {
-    "_rows": {
+    "rows": {
         "min": 10,
         "max": 200,
     },
-    "_columns": {
+    "columns": {
         "min": 10,
         "max": 200,
     },
-    "_grid_size_x": {
+    "grid_size_x": {
         "min": 10,
         "max": 70,
     },
-    "_grid_size_y": {
+    "grid_size_y": {
         "min": 10,
         "max": 70,
     },

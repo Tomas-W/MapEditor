@@ -90,18 +90,14 @@ class ErrorHandler:
         col_errors = 0
         world_data: List[List[int]] = self.editor.world_data
         # check rows
-        # noinspection PyProtectedMember
-        if len(world_data) > self.editor._rows:
+        if len(world_data) > self.editor.rows:
             # more world data rows than grid rows
-            # noinspection PyProtectedMember
-            for row in world_data[self.editor._rows:]:
+            for row in world_data[self.editor.rows:]:
                 for tile in row:
                     if tile != -1:
                         row_errors += 1
-        # noinspection PyProtectedMember
-        if len(world_data[0]) > self.editor._columns:
-            # noinspection PyProtectedMember
-            col_iterator = range(self.editor._columns, len(world_data[0]))
+        if len(world_data[0]) > self.editor.columns:
+            col_iterator = range(self.editor.columns, len(world_data[0]))
             for row in world_data:
                 for i in col_iterator:
                     if row[i] != -1:

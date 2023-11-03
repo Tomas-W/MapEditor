@@ -18,10 +18,10 @@ def save_map_details(editor: any) -> None:
     """
     # noinspection PyProtectedMember
     save_data = [
-        editor._rows,
-        editor._columns,
-        editor._grid_size_x,
-        editor._grid_size_y,
+        editor.rows,
+        editor.columns,
+        editor.grid_size_x,
+        editor.grid_size_y,
         editor.world_data
     ]
 
@@ -144,7 +144,7 @@ def can_place_tile(editor: any,
 
     # Check bottom and right boundaries
     # noinspection PyProtectedMember
-    if grid_x >= editor._columns or grid_y >= editor._rows:
+    if grid_x >= editor.columns or grid_y >= editor.rows:
         return False
 
     return True
@@ -190,9 +190,9 @@ def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
            tuple[float, float]: minimap size.
     """
     # noinspection PyProtectedMember
-    map_width = editor._columns * editor._grid_size_x
+    map_width = editor.columns * editor.grid_size_x
     # noinspection PyProtectedMember
-    map_height = editor._rows * editor._grid_size_y
+    map_height = editor.rows * editor.grid_size_y
 
     scale_width = RIGHT_MARGIN / map_width
     scale_height = BOTTOM_MARGIN / map_height
@@ -227,33 +227,22 @@ def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
     return larger_rect
 
 
-def get_preferences_dict(self) -> OrderedDict[str, int]:
-    # noinspection PyProtectedMember
-    preferences_dict: OrderedDict[str, int] = OrderedDict([
-        ("_rows", self.editor._rows),
-        ("_columns", self.editor._columns),
-        ("_grid_size_x", self.editor._grid_size_x),
-        ("_grid_size_y", self.editor._grid_size_y)])
-    return preferences_dict
-
-
 def update_background(editor: any) -> pygame.Surface:
-    # noinspection PyProtectedMember
     return pygame.transform.scale(surface=editor.background,
                                   size=(
-                                      editor._columns * editor._grid_size_x,
-                                      editor._rows * editor._grid_size_y
+                                      editor.columns * editor.grid_size_x,
+                                      editor.rows * editor.grid_size_y
                                   ))
 
 
 def update_world_data_size(editor: any) -> None:
-    rows_to_add = editor._rows - len(editor.world_data)
-    cols_to_add = editor._columns - len(editor.world_data[0])
+    rows_to_add = editor.rows - len(editor.world_data)
+    cols_to_add = editor.columns - len(editor.world_data[0])
 
     for row in editor.world_data:
         for x in range(cols_to_add):
             row.append(-1)
 
     for x in range(rows_to_add):
-        editor.world_data.append([-1 for y in range(editor._columns)])
+        editor.world_data.append([-1 for y in range(editor.columns)])
 

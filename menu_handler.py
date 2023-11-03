@@ -131,7 +131,7 @@ class MenuHandler:
         self.draw_presets_button()
         self.draw_menu_buttons()
 
-        if self.editor.displaying_presets:
+        if self.editor.is_displaying_presets:
             self.draw_presets_menu()
 
         if self.editor.is_in_file_menu:
@@ -158,12 +158,14 @@ class MenuHandler:
         elif self.is_cropping_map:
             self.draw_crop_menu()
 
+# ################################################### #
+# ##################### PRESETS ##################### #
     def draw_presets_button(self) -> None:
         """
             Blits presets button to the screen.
         """
         if self.sets_button.draw():
-            self.editor.displaying_presets = not self.editor.displaying_presets
+            self.editor.is_displaying_presets = not self.editor.is_displaying_presets
 
     def draw_presets_menu(self) -> None:
         self.display_presets()
@@ -172,6 +174,8 @@ class MenuHandler:
         if selected_preset is not None:
             self.editor.load_new_preset(selected_preset=selected_preset)
 
+# ################################################### #
+# ###################### MENUS ###################### #
     def draw_menu_buttons(self) -> None:
         if self.file_button.draw():
             self.set_state("file_menu")
@@ -195,13 +199,15 @@ class MenuHandler:
     def draw_edit_menu(self) -> None:
         if self.pref_button.draw():
             self.preferences_dict = self.get_preferences_dict()
-            self.editor.selected_preference_value = self.editor._rows
-            self.editor.selected_preference_value_change = self.editor._rows
+            self.editor.selected_preference_value = self.editor.rows
+            self.editor.selected_preference_value_change = self.editor.rows
             self.set_state("changing_prefs")
 
         if self.crop_button.draw():
             self.set_state("cropping_map")
 
+# ################################################### #
+# #################### FILE MENU #################### #
     def draw_save_map_menu(self) -> None:
         helpers.save_map_details(editor=self.editor)
         self.set_state("reset")
@@ -228,6 +234,8 @@ class MenuHandler:
         self.set_state("restart_map")
         self.editor.restart_self()
 
+# ################################################### #
+# #################### EDIT MENU #################### #
     def draw_preferences_menu(self) -> None:
         self.editor.screen.fill(DARK_ORANGE)
         self.display_preferences()
@@ -241,8 +249,8 @@ class MenuHandler:
 
     def draw_crop_menu(self) -> None:
         self.editor.world_data = general.crop_world_data(world_data=self.editor.world_data)
-        self.editor._rows = len(self.editor.world_data)
-        self.editor._columns = len(self.editor.world_data[0])
+        self.editor.rows = len(self.editor.world_data)
+        self.editor.columns = len(self.editor.world_data[0])
         self.editor.background = helpers.update_background(editor=self.editor)
 
     def draw_preference_buttons(self) -> None:
@@ -285,12 +293,11 @@ class MenuHandler:
             self.set_state("reset")
 
     def get_preferences_dict(self) -> OrderedDict[str, int]:
-        # noinspection PyProtectedMember
         preferences_dict: OrderedDict[str, int] = OrderedDict([
-            ("_rows", self.editor._rows),
-            ("_columns", self.editor._columns),
-            ("_grid_size_x", self.editor._grid_size_x),
-            ("_grid_size_y", self.editor._grid_size_y)])
+            ("rows", self.editor.rows),
+            ("columns", self.editor.columns),
+            ("grid_size_x", self.editor.grid_size_x),
+            ("grid_size_y", self.editor.grid_size_y)])
         return preferences_dict
 
     @staticmethod
