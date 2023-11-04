@@ -85,8 +85,8 @@ class Editor:
         self.selected_preference_value_change = self.rows
 
         # Presets
-        self.preset_names: List[str] = self.menu_controller.menu_renderer.preset_names
-        self.shortened_preset_names: List[str] = self.menu_controller.menu_renderer.shortened_preset_names
+        self.preset_names: List[str] = self.menu_controller.presets_renderer.preset_names
+        self.shortened_preset_names: List[str] = self.menu_controller.presets_renderer.shortened_preset_names
         self.current_preset: str = self.preset_names[0]
 
         # Tiles
@@ -508,7 +508,7 @@ class Editor:
             self.mouse_pos = pygame.mouse.get_pos()
 
             pygame.display.set_caption(
-                f"Editing: {self.map_name} @ {int(self.clock.get_fps())} fps")
+                f"Editing: {self.map_name} ({self.columns}x{self.rows}) @ {int(self.clock.get_fps())} fps")
 
             # Background
             self.screen.fill((89, 160, 205))

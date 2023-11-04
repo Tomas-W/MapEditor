@@ -71,37 +71,6 @@ def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
     return rows_to_keep, cols_to_keep
 
 
-def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
-    """
-        Removes all rows and columns, descending, that contain only -1 values.
-
-        Args:
-            world_data (List[List[int]]): Nested list containing tile indexes of the map.
-
-        Returns:
-            List[List[int]]: Cropped version of world_data
-    """
-    old_rows, old_cols = len(world_data), len(world_data[0])
-    new_rows, new_cols = get_grid_max_row_col(world_data=world_data)
-
-    min_rows = GRID_PREFERENCES_DICT["rows"]["min"]
-    min_cols = GRID_PREFERENCES_DICT["columns"]["min"]
-    # User tries to crop map smaller than min map size
-    if new_rows < min_rows:
-        new_rows = min_rows
-
-    if new_cols < min_cols:
-        new_cols = min_cols
-
-    world_data = world_data[:new_rows]
-
-    new_world_data = []
-    for row in world_data:
-        new_world_data.append(row[:new_cols])
-
-    return new_world_data
-
-
 def get_sorted_tile_names(preset_name: str) -> List[str]:
     """
         Get a list of tile names sorted by their index.
@@ -176,20 +145,3 @@ def get_tile_indexes(preset_name: str) -> List[int]:
     return sorted(
         [int(f.split("_")[0]) for f in os.listdir(os.path.join(PRESETS_DIR, preset_name)) if
          f.endswith(".png")])
-
-
-def is_new_value_allowed(name: str,
-                         value: int) -> bool:
-    """
-        Checks whether a preference value falls within a bound set in
-            grid_preference_dict and returns True if so, else False.
-
-        Args:
-            name (str): Name of a preference.
-            value (int): Value to check.
-
-        Returns:
-            bool: True if value is within bounds, else False.
-    """
-    dict_ = GRID_PREFERENCES_DICT
-    return dict_[name]["min"] <= value <= dict_[name]["max"]

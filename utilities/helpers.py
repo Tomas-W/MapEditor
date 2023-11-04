@@ -8,29 +8,6 @@ from settings.paths import *
 from settings.setup import *
 
 
-def save_map_details(editor: any) -> None:
-    """
-        Serializes map-dependent variables into pickle format and
-            saves it under the maps name.
-
-        Args:
-            editor (any): Current Editor object.
-    """
-    # noinspection PyProtectedMember
-    save_data = [
-        editor.rows,
-        editor.columns,
-        editor.grid_size_x,
-        editor.grid_size_y,
-        editor.world_data
-    ]
-
-    with open(file=os.path.join(MAPS_DIR, editor.map_name),
-              mode="wb") as pickle_out:
-        pickle.dump(obj=save_data,
-                    file=pickle_out)
-
-
 def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, List[List[int]]]:
     """
         Loads map-dependent variables from a pickle file and deserializes it.
@@ -46,6 +23,14 @@ def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, List[List
     load_data = pickle.load(pickle_in)
 
     return load_data
+
+
+def update_background(editor: Any) -> pygame.Surface:
+    return pygame.transform.scale(surface=editor.background,
+                                  size=(
+                                      editor.columns * editor.grid_size_x,
+                                      editor.rows * editor.grid_size_y
+                                  ))
 
 
 def update_class_dict(cls: any,
@@ -69,48 +54,6 @@ def update_class_dict(cls: any,
             raise KeyError(f"'{str(cls)}' accepts no keyword '{key}'.")
 
     cls.__dict__.update(approved_dict)
-
-
-def deserialize_map_details(editor: any,
-                            map_name: str) -> Dict:
-    """
-        Deserialize a pickled map and load the attributes into a dict.
-
-        Args:
-            editor (any): Current Editor object.
-            map_name (str): Name of the map to deserialize.
-
-        Returns:
-             Dict: Dictionary containing attributes to update a class instance.
-    """
-    load_data = get_loaded_map_details(map_name=map_name)
-
-    rows, columns, grid_size_x, grid_size_y, world_data = load_data
-
-    background = pygame.transform.scale(surface=editor.background,
-                                        size=(
-                                            columns * grid_size_x,
-                                            rows * grid_size_y
-                                        ))
-
-    dict_updater = {
-        "scroll_x": 0,
-        "scroll_y": 0,
-        "map_name": map_name,
-        "temp_map_name": map_name,
-
-        "rows": rows,
-        "columns": columns,
-        "grid_size_x": grid_size_x,
-        "grid_size_y": grid_size_y,
-
-        "world_data": world_data,
-        "background": background,
-
-        "is_building": True,
-    }
-
-    return dict_updater
 
 
 def can_place_tile(editor: any,
@@ -225,24 +168,3 @@ def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
     )
 
     return larger_rect
-
-
-def update_background(editor: any) -> pygame.Surface:
-    return pygame.transform.scale(surface=editor.background,
-                                  size=(
-                                      editor.columns * editor.grid_size_x,
-                                      editor.rows * editor.grid_size_y
-                                  ))
-
-
-def update_world_data_size(editor: any) -> None:
-    rows_to_add = editor.rows - len(editor.world_data)
-    cols_to_add = editor.columns - len(editor.world_data[0])
-
-    for row in editor.world_data:
-        for x in range(cols_to_add):
-            row.append(-1)
-
-    for x in range(rows_to_add):
-        editor.world_data.append([-1 for y in range(editor.columns)])
-
