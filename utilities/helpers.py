@@ -66,7 +66,7 @@ def update_class_dict(cls: any,
         if key in cls_dict:
             approved_dict[key] = val
         else:
-            raise KeyError(f"{str(cls)} accepts no keyword {key}.")
+            raise KeyError(f"'{str(cls)}' accepts no keyword '{key}'.")
 
     cls.__dict__.update(approved_dict)
 
@@ -99,10 +99,10 @@ def deserialize_map_details(editor: any,
         "map_name": map_name,
         "temp_map_name": map_name,
 
-        "_rows": rows,
-        "_columns": columns,
-        "_grid_size_x": grid_size_x,
-        "_grid_size_y": grid_size_y,
+        "rows": rows,
+        "columns": columns,
+        "grid_size_x": grid_size_x,
+        "grid_size_y": grid_size_y,
 
         "world_data": world_data,
         "background": background,

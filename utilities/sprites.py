@@ -112,7 +112,7 @@ def get_preset_sprites(preset_name: str) -> List[pygame.Surface]:
         Returns:
             List[pygame.Surface]: List of sprite images.
         """
-    path = os.path.join(PRESET_DIR, preset_name)
+    path = os.path.join(PRESETS_DIR, preset_name)
     sprite_names = general.get_sorted_tile_names(preset_name=preset_name)
 
     sprite_list = []
@@ -134,7 +134,7 @@ def get_all_level_objects() -> Dict[int, pygame.Surface]:
     # Create a dictionary to store images by their index
     all_level_objects = {}
 
-    for subdir, _, files in os.walk(PRESET_DIR):
+    for subdir, _, files in os.walk(PRESETS_DIR):
         for file in files:
             if file.endswith('.png'):
                 # Extract the number from the file name

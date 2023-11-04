@@ -174,7 +174,7 @@ def get_tile_buttons(preset_name: str,
     tile_list_ = get_preset_sprites(preset_name=preset_name)
     # Get their indexes for tile-map
     index_list = sorted([int(f.split("_")[0]) for f in
-                         os.listdir(os.path.join(PRESET_DIR, preset_name)) if
+                         os.listdir(os.path.join(PRESETS_DIR, preset_name)) if
                          f.endswith('.png')])
 
     # Create and append all tile buttons

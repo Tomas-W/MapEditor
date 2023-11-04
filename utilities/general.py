@@ -84,8 +84,8 @@ def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
     old_rows, old_cols = len(world_data), len(world_data[0])
     new_rows, new_cols = get_grid_max_row_col(world_data=world_data)
 
-    min_rows = GRID_PREFERENCES_DICT["_rows"]["min"]
-    min_cols = GRID_PREFERENCES_DICT["_columns"]["min"]
+    min_rows = GRID_PREFERENCES_DICT["rows"]["min"]
+    min_cols = GRID_PREFERENCES_DICT["columns"]["min"]
     # User tries to crop map smaller than min map size
     if new_rows < min_rows:
         new_rows = min_rows
@@ -110,7 +110,7 @@ def get_sorted_tile_names(preset_name: str) -> List[str]:
             preset_name (str): Name of the preset
     """
     indexes = get_tile_indexes(preset_name=preset_name)
-    full_names = os.listdir(os.path.join(PRESET_DIR, preset_name))
+    full_names = os.listdir(os.path.join(PRESETS_DIR, preset_name))
     tile_names = []
 
     for i in range(indexes[0], indexes[-1] + 1):
@@ -174,7 +174,7 @@ def get_tile_indexes(preset_name: str) -> List[int]:
            List[int]: Sorted list of tile indexes.
        """
     return sorted(
-        [int(f.split("_")[0]) for f in os.listdir(os.path.join(PRESET_DIR, preset_name)) if
+        [int(f.split("_")[0]) for f in os.listdir(os.path.join(PRESETS_DIR, preset_name)) if
          f.endswith(".png")])
 
 

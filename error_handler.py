@@ -1,24 +1,10 @@
-from dataclasses import dataclass, field
-from typing import List, Union, Dict, OrderedDict, Tuple, Self
+from typing import List, Dict, Self
 
-import pygame
+import utilities.render_text as text
 
-import utilities.drawing as text
-
-from settings.setup import *
-from settings.paths import *
-
-from settings.canvas import *
 from settings.errors import *
-from settings.panels import *
-from settings.menus import *
-from settings.minimap import *
 
-import utilities.drawing as drawing
 import utilities.fonts as fonts
-import utilities.general as general
-import utilities.sprites as sprites
-import utilities.helpers as helpers
 
 
 class ErrorHandler:
@@ -122,7 +108,7 @@ class ErrorHandler:
         error_messages = [val for (key, val) in self.error_messages.items() if val is not None]
 
         for i, error in enumerate(error_messages):
-            text.draw(
+            text.position(
                 screen=self.editor.screen,
                 text=error,
                 font=fonts.error_font,

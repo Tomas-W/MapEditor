@@ -12,7 +12,7 @@ from settings.errors import *
 screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
 
-from menu_handler import MenuHandler
+from menu_manager.menu_controller import MenuController
 from event_handler import EventHandler
 from error_handler import ErrorHandler
 
@@ -23,7 +23,7 @@ import utilities.fonts as fonts
 import utilities.general as general
 import utilities.helpers as helpers
 import utilities.sprites as sprites
-import utilities.drawing as text
+import utilities.render_text as text
 
 
 class Editor:
@@ -67,7 +67,7 @@ class Editor:
         self.event_handler = EventHandler(editor=self)
 
         # Menus
-        self.menu_handler = MenuHandler(editor=self)
+        self.menu_controller = MenuController(editor=self)
 
         # Quick Menu buttons
         self.grid_button = buttons.get_utility_button(editor=self,
@@ -85,8 +85,8 @@ class Editor:
         self.selected_preference_value_change = self.rows
 
         # Presets
-        self.preset_names: List[str] = self.menu_handler.preset_names
-        self.shortened_preset_names: List[str] = self.menu_handler.shortened_preset_names
+        self.preset_names: List[str] = self.menu_controller.menu_renderer.preset_names
+        self.shortened_preset_names: List[str] = self.menu_controller.menu_renderer.shortened_preset_names
         self.current_preset: str = self.preset_names[0]
 
         # Tiles
@@ -128,9 +128,6 @@ class Editor:
         self.error_handler = ErrorHandler(editor=self)
 
         self.test = 100
-
-    def __repr__(self):
-        return f"EDITOR INSTANCE {self.rows, self.columns}"
 
     def __str__(self) -> str:
         return f"Editing: {self.map_name}"
@@ -303,12 +300,12 @@ class Editor:
             Draws label above the tile on the side panel.
         """
         for tile, text_ in zip(self.tile_buttons[:MAX_NR_TILES], self.tile_names[:MAX_NR_TILES]):
-            text.draw(screen=self.screen,
-                      text=str(text_),
-                      font=fonts.label_font,
-                      color=TILE_LABEL_COLOR,
-                      x_pos=tile.rect.topleft[0],
-                      y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
+            text.position(screen=self.screen,
+                          text=str(text_),
+                          font=fonts.label_font,
+                          color=TILE_LABEL_COLOR,
+                          x_pos=tile.rect.topleft[0],
+                          y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
 
     def highlight_selected_tile(self) -> None:
         """
@@ -535,8 +532,9 @@ class Editor:
 
             # Events
             self.event_handler.run()
+
             # Menus
-            self.menu_handler.run()
+            self.menu_controller.run()
 
             # Errors
             self.error_handler.set_out_of_bounds_error()
