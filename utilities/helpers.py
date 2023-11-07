@@ -1,28 +1,8 @@
-import pickle
-from collections import OrderedDict
-from typing import List, Union, Tuple, Dict, Any
+from typing import Tuple, Dict, Any
 
 import pygame
 
-from settings.paths import *
 from settings.setup import *
-
-
-def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, List[List[int]]]:
-    """
-        Loads map-dependent variables from a pickle file and deserializes it.
-
-        Args:
-            map_name (str): Name of the map to load.
-
-        Returns:
-            list[int, int, int, int, list[list[int]]]: A list containing map-dependent variables.
-    """
-    pickle_in = open(os.path.join(MAPS_DIR, map_name),
-                     mode="rb")
-    load_data = pickle.load(pickle_in)
-
-    return load_data
 
 
 def update_background(editor: Any) -> pygame.Surface:
@@ -148,7 +128,7 @@ def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
     return scale_factor, map_width * scale_factor, map_height * scale_factor
 
 
-def get_enlarged_rect(rect: Union[Tuple[int, int, int, int], pygame.Rect],
+def get_enlarged_rect(rect: Tuple[int, int, int, int] | pygame.Rect,
                       pixels: int) -> pygame.Rect:
     """
        Get a pygame.Rect object enlarged by x pixels on each side.

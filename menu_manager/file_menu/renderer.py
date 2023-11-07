@@ -15,7 +15,7 @@ class FileMenuRenderer:
     """
         Responsible for rendering all File Menu features.
         Blits File Menu Category buttons to the screen,
-            sets the correct Menu state in the MenuController and
+            sets the correct File Menu state in the MenuController and
             loads the correct screen.
     """
 
@@ -50,10 +50,24 @@ class FileMenuRenderer:
         self.clicked = False
 
     def draw_file_menu_button(self) -> None:
+        """
+            Blits File Menu button to the screen and sets the state to 'file_menu' if
+                the user clicks the button.
+
+            Returns:
+                None
+        """
         if self.file_button.draw():
             self.menu_controller.set_state("file_menu")
 
     def draw_file_menu(self) -> None:
+        """
+            Blits buttons related to the File Menu to the screen and sets the correct state when
+                the user clicks one of them.
+
+            Returns:
+            None
+        """
         if self.save_button.draw():
             self.menu_controller.set_state("saving_map")
 
@@ -107,5 +121,5 @@ class FileMenuRenderer:
         self.menu_controller.event_handler.get_map_name_input()
 
     def draw_restart_map_menu(self) -> None:
-        self.menu_controller.set_state("restart_map")
-        self.editor.restart_self()
+        self.menu_controller.set_state("restarting_map")
+        self.editor.restart_map()

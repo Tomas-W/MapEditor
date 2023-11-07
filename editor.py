@@ -112,8 +112,6 @@ class Editor:
         # States
         self.is_running = True
         self.is_building = True
-        self.is_in_file_menu = False
-        self.is_in_edit_menu = False
 
         # Presets
         self.is_displaying_presets = False
@@ -132,10 +130,90 @@ class Editor:
     def __str__(self) -> str:
         return f"Editing: {self.map_name}"
 
-    @staticmethod
-    def restart_self() -> None:
-        map_editor = Editor()
-        map_editor.run()
+    def wipe_map(self):
+        self.world_data: List[List[int]] = general.get_fresh_world_data(
+            columns=self.columns,
+            rows=self.rows
+        )
+
+    def restart_map(self) -> None:
+        self.map_name: str = "New map"
+        self.temp_map_name: str = self.map_name
+
+        self.rows = ROWS
+        self.columns = COLUMNS
+        self.grid_size_x = GRID_SIZE_X
+        self.grid_size_y = GRID_SIZE_Y
+        self.world_data: List[List[int]] = general.get_fresh_world_data(
+            columns=self.columns,
+            rows=self.rows
+        )
+
+        # Scrolling
+        self.scroll_left = False
+        self.scroll_right = False
+        self.scroll_up = False
+        self.scroll_down = False
+        self.scroll_x = 0
+        self.scroll_y = 0
+        self.scroll_speed = BASE_SCROLL_SPEED
+        self.base_scroll_speed = BASE_SCROLL_SPEED
+        self.max_scroll_speed = MAX_SCROLL_SPEED
+        # Save position for switching between build- and overview
+        self.editing_scroll_x = 0
+        self.editing_scroll_y = 0
+
+        # Events
+        self.event_handler = EventHandler(editor=self)
+
+        # Menus
+        self.menu_controller = MenuController(editor=self)
+
+        # Preferences
+        self.selected_preference_name = "rows"
+        self.selected_preference_value = self.rows
+        self.selected_preference_value_change = self.rows
+
+        # Presets
+        self.preset_names: List[str] = self.menu_controller.presets_renderer.preset_names
+        self.shortened_preset_names: List[
+            str] = self.menu_controller.presets_renderer.shortened_preset_names
+        self.current_preset: str = self.preset_names[0]
+
+        # Tiles
+        self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
+        self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
+            preset_name=self.current_preset
+        )
+        self.tile_names: List[str] = general.get_tile_names(
+            preset_name=self.current_preset
+        )
+        self.tile_indexes: List[int] = general.get_tile_indexes(
+            preset_name=self.current_preset
+        )
+        self.tile_buttons: List[buttons.TileButton] = buttons.get_tile_buttons(
+            preset_name=self.current_preset,
+            editor=self
+        )
+        self.current_tile: int = 0
+        self.current_object: int = self.tile_indexes[0]
+        self.tile_undo_tracker: List[Tuple[tuple, int]] = []
+        self.tile_redo_tracker: List[Tuple[tuple, int]] = []
+
+        # States
+        self.is_running = True
+        self.is_building = True
+
+        # Presets
+        self.is_displaying_presets = False
+
+        # Quick menu
+        self.show_grid = True
+        self.scale_width = 1
+        self.scale_height = 1
+        self.show_map_overview = False
+
+        self.test = 100
 
     def scroll_map(self) -> None:
         """

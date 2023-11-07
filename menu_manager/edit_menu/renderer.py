@@ -8,7 +8,7 @@ from menu_manager.edit_menu import utils
 
 from utilities import buttons, helpers
 
-from settings.buttons import EDIT_BTN, PREF_BTN, CROP_BTN, BACK_BTN, OK_BTN
+from settings.buttons import EDIT_BTN, PREF_BTN, CROP_BTN, BACK_BTN, OK_BTN, WIPE_BTN
 from settings.setup import DARK_ORANGE
 
 
@@ -39,6 +39,8 @@ class EditMenuRenderer:
                                                       **PREF_BTN)
         self.crop_button = buttons.get_utility_button(editor=self.editor,
                                                       **CROP_BTN)
+        self.wipe_button = buttons.get_utility_button(editor=self.editor,
+                                                      **WIPE_BTN)
 
         self.back_button = buttons.get_utility_button(editor=self.editor,
                                                       **BACK_BTN)
@@ -61,6 +63,9 @@ class EditMenuRenderer:
 
         if self.crop_button.draw():
             self.menu_controller.set_state("cropping_map")
+
+        if self.wipe_button.draw():
+            self.menu_controller.set_state("wiping_map")
 
     def pressed_ok_button(self) -> bool:
         """
@@ -97,4 +102,8 @@ class EditMenuRenderer:
         self.editor.rows = len(self.editor.world_data)
         self.editor.columns = len(self.editor.world_data[0])
         self.editor.background = helpers.update_background(editor=self.editor)
+        self.menu_controller.set_state("reset")
+
+    def draw_wipe_menu(self) -> None:
+        self.editor.wipe_map()
         self.menu_controller.set_state("reset")

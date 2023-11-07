@@ -1,4 +1,4 @@
-from .setup import *
+from settings.setup import *
 
 
 MINIMAP_WIDTH = BOTTOM_MARGIN

@@ -1,30 +1,8 @@
 import pickle
-from collections import OrderedDict
-from typing import List, Union, Tuple, Dict, Any
-from typing import OrderedDict as OrderedDictType
+from typing import List, Tuple
 
 from settings.panels import *
 from settings.paths import *
-from settings.minimap import *
-
-
-def is_pickled(file_path: str) -> bool:
-    """
-        Check if a file is pickled.
-
-        Args:
-            file_path (str): Path to the file.
-
-        Returns:
-            bool: True if the file is pickled, False otherwise.
-        """
-    try:
-        with open(file_path, "rb") as file:
-            pickle.load(file)
-        return True
-
-    except (pickle.UnpicklingError, EOFError, FileNotFoundError):
-        return False
 
 
 def get_fresh_world_data(columns: int,
@@ -41,34 +19,6 @@ def get_fresh_world_data(columns: int,
             List[List[int]]: Nested list containing object indexes.
     """
     return [[-1] * columns for _ in range(rows)]
-
-
-def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
-    """
-        Get the number of rows and columns that can be removed from the end of world_data.
-        First value is the number of rows, descending, that contain no -1.
-        Second value is the number of columns, descending, that contain no -1
-
-        Args:
-            world_data (List[List[int]]: Nested list containing tile indexes of the map.
-
-        Returns:
-            Tuple[int, int]: Number of rows and columns that can be safely removed.
-    """
-    rows_to_keep = len(world_data)
-    for row in world_data[::-1]:
-        if all(index == -1 for index in row):
-            rows_to_keep -= 1
-        else:
-            break
-
-    cols_to_keep = 0
-    for row in world_data:
-        for i, col in enumerate(row):
-            if col != -1:
-                cols_to_keep = max(cols_to_keep, i + 1)
-
-    return rows_to_keep, cols_to_keep
 
 
 def get_sorted_tile_names(preset_name: str) -> List[str]:

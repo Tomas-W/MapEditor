@@ -6,14 +6,18 @@ BUTTON_HIGHLIGHT_WIDTH = 4
 BUTTON_MARGIN_X = 16
 BUTTON_MARGIN_Y = 16
 
-# Presets
+# Presets Buttons
 SETS_BUTTON_X = SCREEN_WIDTH + RIGHT_MARGIN // 2 - BUTTON_WIDTH // 2
 SETS_BUTTON_Y = BUTTON_HEIGHT // 2
 
-# File Menu
+# Menu Buttons
 FILE_BUTTON_X = BUTTON_MARGIN_X
 FILE_BUTTON_Y = SCREEN_HEIGHT + BUTTON_MARGIN_Y
 
+EDIT_BUTTON_X = FILE_BUTTON_X
+EDIT_BUTTON_Y = FILE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
+
+# File Menu Buttons
 SAVE_BUTTON_X = FILE_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X * 2
 SAVE_BUTTON_Y = FILE_BUTTON_Y
 
@@ -26,15 +30,15 @@ NAME_BUTTON_Y = SAVE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 NEW_BUTTON_X = LOAD_BUTTON_X
 NEW_BUTTON_Y = NAME_BUTTON_Y
 
-# Edit Menu
-EDIT_BUTTON_X = FILE_BUTTON_X
-EDIT_BUTTON_Y = FILE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
-
+# Edit Menu Buttons
 PREF_BUTTON_X = EDIT_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X * 2
 PREF_BUTTON_Y = FILE_BUTTON_Y
 
 CROP_BUTTON_X = PREF_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X
 CROP_BUTTON_Y = PREF_BUTTON_Y
+
+WIPE_BUTTON_X = PREF_BUTTON_X
+WIPE_BUTTON_Y = EDIT_BUTTON_Y
 
 # General Menu
 BACK_BUTTON_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 - BUTTON_WIDTH * 1.25
@@ -56,7 +60,7 @@ GRID_BUTTON_Y = LOAD_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 MAP_BUTTON_X = REDO_BUTTON_X
 MAP_BUTTON_Y = GRID_BUTTON_Y
 
-# Presets
+# Presets Buttons
 SETS_BTN = {
     "x": SETS_BUTTON_X,
     "y": SETS_BUTTON_Y,
@@ -65,7 +69,7 @@ SETS_BTN = {
     "name": "sets_btn",
 }
 
-# File Menu
+# Menu Buttons
 FILE_BTN = {
     "x": FILE_BUTTON_X,
     "y": FILE_BUTTON_Y,
@@ -74,6 +78,15 @@ FILE_BTN = {
     "name": "file_btn",
 }
 
+EDIT_BTN = {
+    "x": EDIT_BUTTON_X,
+    "y": EDIT_BUTTON_Y,
+    "image": edit_button_image,
+    "scale": 1,
+    "name": "edit_btn",
+}
+
+# File Menu Buttons
 SAVE_BTN = {
     "x": SAVE_BUTTON_X,
     "y": SAVE_BUTTON_Y,
@@ -106,14 +119,7 @@ NAME_BTN = {
     "name": "name_btn",
 }
 
-# Edit Menu
-EDIT_BTN = {
-    "x": EDIT_BUTTON_X,
-    "y": EDIT_BUTTON_Y,
-    "image": edit_button_image,
-    "scale": 1,
-    "name": "edit_btn",
-}
+# Edit Menu Buttons
 PREF_BTN = {
     "x": PREF_BUTTON_X,
     "y": PREF_BUTTON_Y,
@@ -128,6 +134,14 @@ CROP_BTN = {
     "image": crop_button_image,
     "scale": 1,
     "name": "crop_btn",
+}
+
+WIPE_BTN = {
+    "x": WIPE_BUTTON_X,
+    "y": WIPE_BUTTON_Y,
+    "image": wipe_button_image,
+    "scale": 1,
+    "name": "wipe_btn",
 }
 
 # General Menu

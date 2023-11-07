@@ -1,4 +1,4 @@
-from .setup import *
+from settings.setup import *
 
 
 RIGHT_PANEL_COLOR = BROWN

@@ -19,9 +19,13 @@ background_img = pygame.transform.scale(
 sets_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "sets_btn.png")).convert_alpha()
 
-# File Menu buttons
+# Menu Buttons
 file_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "file_btn.png")).convert_alpha()
+edit_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "edit_btn.png")).convert_alpha()
+
+# File Menu buttons
 save_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "save_btn.png")).convert_alpha()
 
@@ -33,12 +37,13 @@ name_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "name_btn.png")).convert_alpha()
 
 # Edit Menu buttons
-edit_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                   "edit_btn.png")).convert_alpha()
-crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
-                                                   "crop_btn.png")).convert_alpha()
 pref_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "pref_btn.png")).convert_alpha()
+crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "crop_btn.png")).convert_alpha()
+wipe_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                   "wipe_btn.png")).convert_alpha()
+
 
 # General Menu buttons
 back_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
