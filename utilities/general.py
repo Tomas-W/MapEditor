@@ -1,24 +1,25 @@
-import pickle
 from typing import List, Tuple
+
+import numpy as np
 
 from settings.panels import *
 from settings.paths import *
 
 
 def get_fresh_world_data(columns: int,
-                         rows: int) -> List[List[int]]:
+                         rows: int) -> np.array:
     """
-        Gets a nested list containing object indexes or -1.
-        Size depends on chosen number of columns and rows.
+        Gets a Numpy 2d array of size columns * rows
+            where each item is -1.
 
         Args:
             columns (int): Number of columns.
             rows (int): Number of rows.
 
         Returns:
-            List[List[int]]: Nested list containing object indexes.
+            np.array: Numpy 2d array where each item is -1.
     """
-    return [[-1] * columns for _ in range(rows)]
+    return np.full((rows, columns), -1)
 
 
 def get_sorted_tile_names(preset_name: str) -> List[str]:

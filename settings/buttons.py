@@ -17,6 +17,8 @@ FILE_BUTTON_Y = SCREEN_HEIGHT + BUTTON_MARGIN_Y
 EDIT_BUTTON_X = FILE_BUTTON_X
 EDIT_BUTTON_Y = FILE_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 
+TEST_BUTTON_Y = EDIT_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
+
 # File Menu Buttons
 SAVE_BUTTON_X = FILE_BUTTON_X + BUTTON_WIDTH + BUTTON_MARGIN_X * 2
 SAVE_BUTTON_Y = FILE_BUTTON_Y
@@ -59,6 +61,12 @@ GRID_BUTTON_Y = LOAD_BUTTON_Y + BUTTON_HEIGHT + BUTTON_MARGIN_Y
 
 MAP_BUTTON_X = REDO_BUTTON_X
 MAP_BUTTON_Y = GRID_BUTTON_Y
+
+ZOOM_IN_BUTTON_X = UNDO_BUTTON_X
+ZOOM_IN_BUTTON_Y = TEST_BUTTON_Y
+
+ZOOM_OUT_BUTTON_X = REDO_BUTTON_X
+ZOOM_OUT_BUTTON_Y = TEST_BUTTON_Y
 
 # Presets Buttons
 SETS_BTN = {
@@ -194,6 +202,20 @@ MAP_BTN = {
     "name": "map_btn",
 }
 
+ZOOM_IN_BTN = {
+    "x": ZOOM_IN_BUTTON_X,
+    "y": ZOOM_IN_BUTTON_Y,
+    "image": zoom_in_button_image,
+    "scale": 1,
+    "name": "zoom_in_btn",
+}
+ZOOM_OUT_BTN = {
+    "x": ZOOM_OUT_BUTTON_X,
+    "y": ZOOM_OUT_BUTTON_Y,
+    "image": zoom_out_button_image,
+    "scale": 1,
+    "name": "zoom_out_btn",
+}
 
 
 

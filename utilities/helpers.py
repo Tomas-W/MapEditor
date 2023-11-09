@@ -55,19 +55,22 @@ def can_place_tile(editor: any,
     """
     # Check if object is new or already placed
     try:
-        test = editor.world_data[grid_y][grid_x]
+        test = editor.world_data[grid_y, grid_x]
     except IndexError:
+        print("no here")
         return False
 
     if test == editor.current_object:
         return False
+
     # Check top and left boundaries
     if grid_x < 0 or grid_y < 0:
+        print("there")
         return False
 
     # Check bottom and right boundaries
-    # noinspection PyProtectedMember
     if grid_x >= editor.columns or grid_y >= editor.rows:
+        print("here")
         return False
 
     return True
@@ -92,13 +95,12 @@ def can_remove_tile(editor: any,
     """
     # Check if object is new or already placed
     try:
-        if editor.world_data[grid_y][grid_x] == -1:
+        if editor.world_data[grid_y, grid_x] == -1:
             return False
     except IndexError:
         return False
 
-    if 0 <= grid_y < len(editor.world_data) and 0 <= grid_x < len(
-            editor.world_data[grid_y]):
+    if 0 <= grid_y < editor.world_data.shape[0] and 0 <= grid_x < editor.world_data.shape[1]:
         return True
 
     return False

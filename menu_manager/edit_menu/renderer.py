@@ -99,8 +99,8 @@ class EditMenuRenderer:
 
     def draw_crop_menu(self) -> None:
         self.editor.world_data = utils.crop_world_data(world_data=self.editor.world_data)
-        self.editor.rows = len(self.editor.world_data)
-        self.editor.columns = len(self.editor.world_data[0])
+        self.editor.rows = self.editor.world_data.shape[0]
+        self.editor.columns = self.editor.world_data.shape[1]
         self.editor.background = helpers.update_background(editor=self.editor)
         self.menu_controller.set_state("reset")
 

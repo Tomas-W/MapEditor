@@ -8,13 +8,6 @@ class EventHandler:
 
         self.editor = editor
 
-    def run(self):
-        self.quitting_events()
-
-        self.undo_redo_events()
-
-        self.scrolling_events()
-
     def quitting_events(self) -> None:
         """
             Listens for quit event.

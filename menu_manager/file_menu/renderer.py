@@ -78,7 +78,7 @@ class FileMenuRenderer:
             self.menu_controller.set_state("renaming_map")
 
         if self.new_button.draw():
-            self.menu_controller.set_state("restart_map")
+            self.menu_controller.set_state("restarting_map")
 
     def pressed_ok_button(self) -> bool:
         """
@@ -121,5 +121,5 @@ class FileMenuRenderer:
         self.menu_controller.event_handler.get_map_name_input()
 
     def draw_restart_map_menu(self) -> None:
-        self.menu_controller.set_state("restarting_map")
         self.editor.restart_map()
+        self.menu_controller.set_state("restarting_map")

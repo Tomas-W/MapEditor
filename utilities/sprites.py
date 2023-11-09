@@ -44,7 +44,6 @@ crop_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
 wipe_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "wipe_btn.png")).convert_alpha()
 
-
 # General Menu buttons
 back_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "back_btn.png")).convert_alpha()
@@ -60,6 +59,10 @@ grid_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                    "grid_btn.png")).convert_alpha()
 map_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
                                                   "map_btn.png")).convert_alpha()
+zoom_in_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                      "zoom_in_btn.png")).convert_alpha()
+zoom_out_button_image = pygame.image.load(os.path.join(IMAGES_DIR,
+                                                       "zoom_out_btn.png")).convert_alpha()
 
 
 def get_sprites(location: str,

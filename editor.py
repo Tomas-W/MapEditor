@@ -1,5 +1,6 @@
 from typing import Self, Tuple
 
+import numpy as np
 import pygame
 
 pygame.init()
@@ -44,7 +45,7 @@ class Editor:
         self.columns = COLUMNS
         self.grid_size_x = GRID_SIZE_X
         self.grid_size_y = GRID_SIZE_Y
-        self.world_data: List[List[int]] = general.get_fresh_world_data(
+        self.world_data: np.ndarray = general.get_fresh_world_data(
             columns=self.columns,
             rows=self.rows
         )
@@ -70,104 +71,16 @@ class Editor:
         self.menu_controller = MenuController(editor=self)
 
         # Quick Menu buttons
-        self.grid_button = buttons.get_utility_button(editor=self,
-                                                      **GRID_BTN)
-        self.map_button = buttons.get_utility_button(editor=self,
-                                                     **MAP_BTN)
         self.undo_button = buttons.get_utility_button(editor=self,
                                                       **UNDO_BTN)
         self.redo_button = buttons.get_utility_button(editor=self,
                                                       **REDO_BTN)
-
-        # Preferences
-        self.selected_preference_name = "rows"
-        self.selected_preference_value = self.rows
-        self.selected_preference_value_change = self.rows
-
-        # Presets
-        self.preset_names: List[str] = self.menu_controller.presets_renderer.preset_names
-        self.shortened_preset_names: List[str] = self.menu_controller.presets_renderer.shortened_preset_names
-        self.current_preset: str = self.preset_names[0]
-
-        # Tiles
-        self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
-        self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
-            preset_name=self.current_preset
-        )
-        self.tile_names: List[str] = general.get_tile_names(
-            preset_name=self.current_preset
-        )
-        self.tile_indexes: List[int] = general.get_tile_indexes(
-            preset_name=self.current_preset
-        )
-        self.tile_buttons: List[buttons.TileButton] = buttons.get_tile_buttons(
-            preset_name=self.current_preset,
-            editor=self
-        )
-        self.current_tile: int = 0
-        self.current_object: int = self.tile_indexes[0]
-        self.tile_undo_tracker: List[Tuple[tuple, int]] = []
-        self.tile_redo_tracker: List[Tuple[tuple, int]] = []
-
-        # States
-        self.is_running = True
-        self.is_building = True
-
-        # Presets
-        self.is_displaying_presets = False
-
-        # Quick menu
-        self.show_grid = True
-        self.scale_width = 1
-        self.scale_height = 1
-        self.show_map_overview = False
-
-        # Errors
-        self.error_handler = ErrorHandler(editor=self)
-
-        self.test = 100
-
-    def __str__(self) -> str:
-        return f"Editing: {self.map_name}"
-
-    def wipe_map(self):
-        self.world_data: List[List[int]] = general.get_fresh_world_data(
-            columns=self.columns,
-            rows=self.rows
-        )
-
-    def restart_map(self) -> None:
-        self.map_name: str = "New map"
-        self.temp_map_name: str = self.map_name
-
-        self.rows = ROWS
-        self.columns = COLUMNS
-        self.grid_size_x = GRID_SIZE_X
-        self.grid_size_y = GRID_SIZE_Y
-        self.world_data: List[List[int]] = general.get_fresh_world_data(
-            columns=self.columns,
-            rows=self.rows
-        )
-
-        # Scrolling
-        self.scroll_left = False
-        self.scroll_right = False
-        self.scroll_up = False
-        self.scroll_down = False
-        self.scroll_x = 0
-        self.scroll_y = 0
-        self.scroll_speed = BASE_SCROLL_SPEED
-        self.base_scroll_speed = BASE_SCROLL_SPEED
-        self.max_scroll_speed = MAX_SCROLL_SPEED
-        # Save position for switching between build- and overview
-        self.editing_scroll_x = 0
-        self.editing_scroll_y = 0
-
-        # Events
-        self.event_handler = EventHandler(editor=self)
-
-        # Menus
-        self.menu_controller = MenuController(editor=self)
+        self.grid_button = buttons.get_utility_button(editor=self,
+                                                      **GRID_BTN)
+        self.zoom_in_button = buttons.get_utility_button(editor=self,
+                                                         **ZOOM_IN_BTN)
+        self.zoom_out_button = buttons.get_utility_button(editor=self,
+                                                          **ZOOM_OUT_BTN)
 
         # Preferences
         self.selected_preference_name = "rows"
@@ -209,11 +122,105 @@ class Editor:
 
         # Quick menu
         self.show_grid = True
-        self.scale_width = 1
-        self.scale_height = 1
-        self.show_map_overview = False
+        self.scale = 1
+
+        # Errors
+        self.error_handler = ErrorHandler(editor=self)
 
         self.test = 100
+
+    def __str__(self) -> str:
+        return f"Editing: {self.map_name}"
+
+    def zoom_in(self) -> None:
+        if self.scale < 1.8:
+            print("in")
+            self.scale += 0.2
+
+    def zoom_out(self) -> None:
+        if self.scale > 0.4:
+            print("out")
+            self.scale -= 0.2
+
+    def wipe_map(self):
+        self.world_data: np.ndarray = general.get_fresh_world_data(
+            columns=self.columns,
+            rows=self.rows
+        )
+
+    def restart_map(self) -> None:
+        self.map_name: str = "New map"
+        self.temp_map_name: str = self.map_name
+
+        self.rows = ROWS
+        self.columns = COLUMNS
+        self.grid_size_x = GRID_SIZE_X
+        self.grid_size_y = GRID_SIZE_Y
+        self.world_data: np.ndarray = general.get_fresh_world_data(
+            columns=self.columns,
+            rows=self.rows
+        )
+
+        self.background = helpers.update_background(editor=self)
+
+        # Scrolling
+        self.scroll_left = False
+        self.scroll_right = False
+        self.scroll_up = False
+        self.scroll_down = False
+        self.scroll_x = 0
+        self.scroll_y = 0
+        self.scroll_speed = BASE_SCROLL_SPEED
+        self.base_scroll_speed = BASE_SCROLL_SPEED
+        self.max_scroll_speed = MAX_SCROLL_SPEED
+        # Save position for switching between build- and overview
+        self.editing_scroll_x = 0
+        self.editing_scroll_y = 0
+
+        # Menus
+        self.menu_controller = MenuController(editor=self)  # to allow adding new presets
+
+        # Preferences
+        self.selected_preference_name = "rows"
+        self.selected_preference_value = self.rows
+        self.selected_preference_value_change = self.rows
+
+        # Presets
+        self.preset_names: List[str] = self.menu_controller.presets_renderer.preset_names
+        self.shortened_preset_names: List[
+            str] = self.menu_controller.presets_renderer.shortened_preset_names
+        self.current_preset: str = self.preset_names[0]
+
+        # Tiles
+        self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
+        self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
+            preset_name=self.current_preset
+        )
+        self.tile_names: List[str] = general.get_tile_names(
+            preset_name=self.current_preset
+        )
+        self.tile_indexes: List[int] = general.get_tile_indexes(
+            preset_name=self.current_preset
+        )
+        self.tile_buttons: List[buttons.TileButton] = buttons.get_tile_buttons(
+            preset_name=self.current_preset,
+            editor=self
+        )
+        self.current_tile: int = 0
+        self.current_object: int = self.tile_indexes[0]
+        self.tile_undo_tracker: List[Tuple[tuple, int]] = []
+        self.tile_redo_tracker: List[Tuple[tuple, int]] = []
+
+        # States
+        self.is_running = True
+        self.is_building = True
+
+        # Presets
+        self.is_displaying_presets = False
+
+        # Quick menu
+        self.show_grid = True
+        self.scale = 1
 
     def scroll_map(self) -> None:
         """
@@ -240,8 +247,12 @@ class Editor:
                 scroll_x (int): X coordinate of background.topleft.
                 scroll_y (int): Y coordinate of background.topleft.
         """
+        if self.scale != 1:
+            background = pygame.transform.scale(self.background,
+                                                (int(self.background.get_width() * self.scale),
+                                                 int(self.background.get_height() * self.scale)))
         self.screen.blit(background,
-                         (scroll_x, scroll_y))
+                         (scroll_x * self.scale, scroll_y * self.scale))
 
     def draw_grid(self) -> None:
         """
@@ -252,79 +263,43 @@ class Editor:
         for x in range(self.rows + 1):
             pygame.draw.line(surface=self.screen,
                              color=GRID_LINE_COLOR,
-                             start_pos=(0, x * self.grid_size_y + self.scroll_y),
-                             end_pos=(SCREEN_WIDTH, x * self.grid_size_y + self.scroll_y))
+                             start_pos=(
+                                 0,
+                                 int((x * self.grid_size_y + self.scroll_y) * self.scale)),
+                             end_pos=(
+                                 SCREEN_WIDTH,
+                                 int((x * self.grid_size_y + self.scroll_y) * self.scale)))
 
         # Vertical lines
         for y in range(self.columns + 1):
             pygame.draw.line(surface=self.screen,
                              color=GRID_LINE_COLOR,
-                             start_pos=(y * self.grid_size_x + self.scroll_x, 0),
-                             end_pos=(y * self.grid_size_x + self.scroll_x, SCREEN_HEIGHT))
+                             start_pos=(
+                                 int((y * self.grid_size_x + self.scroll_x) * self.scale), 0),
+                             end_pos=(int((y * self.grid_size_x + self.scroll_x) * self.scale),
+                                      SCREEN_HEIGHT))
 
     def draw_map(self) -> None:
         """
             Loops over self.world_data and draws all objects.
         """
-        for x, row in enumerate(self.world_data):
-            for y, tile in enumerate(row):
+        for y, row in enumerate(self.world_data):
+            for x, col in enumerate(row):
+                tile = self.world_data[y, x]
                 if tile > -1:
-                    self.screen.blit(source=self.level_objects[tile],
-                                     dest=(y * self.grid_size_x + self.scroll_x,
-                                           x * self.grid_size_x + self.scroll_y))
-
-    def set_overview_scale(self) -> None:
-        """
-            Calculate size difference between view area and map.
-            Applies scaling to necessary settings.
-        """
-        map_width = self.columns * self.grid_size_x
-        map_height = self.rows * self.grid_size_y
-
-        self.scale_width = SCREEN_WIDTH / map_width
-        self.scale_height = SCREEN_HEIGHT / map_height
-
-        if self.scale_width < self.scale_height:
-            scale_factor = self.scale_width
-        else:
-            scale_factor = self.scale_height
-
-        self.grid_size_x = GRID_SIZE_X * scale_factor
-        self.grid_size_y = GRID_SIZE_Y * scale_factor
-
-        self.background = pygame.transform.scale(surface=self.background,
-                                                 size=(self.background.get_width() * scale_factor,
-                                                       self.background.get_height() * scale_factor))
-
-    def set_default_scale(self) -> None:
-        """
-            Resets all settings applied through set_overview_scale to
-                their default so building view is restored.
-        """
-        self.scale_width = 1
-        self.scale_height = 1
-
-        self.grid_size_x = GRID_SIZE_X
-        self.grid_size_y = GRID_SIZE_Y
-
-        self.background = pygame.transform.scale(surface=self.background,
-                                                 size=self.og_background_size)
-
-    def draw_map_overview(self) -> None:
-        """
-            Loops over self.world_data and draws all objects.
-        """
-        for x, row in enumerate(self.world_data):
-            for y, tile in enumerate(row):
-                if tile > -1:
-                    img = pygame.transform.scale(self.level_objects[tile],
-                                                 (int(self.scale_width * self.level_objects[
-                                                     tile].get_width()),
-                                                  int(self.scale_height * self.level_objects[
-                                                      tile].get_height())))
-                    self.screen.blit(source=img,
-                                     dest=(y * self.grid_size_x + self.scroll_x,
-                                           x * self.grid_size_y + self.scroll_y))
+                    if self.scale != 1:
+                        img = pygame.transform.scale(self.level_objects[tile],
+                                                     (int(self.scale * self.level_objects[
+                                                         tile].get_width()),
+                                                      int(self.scale * self.level_objects[
+                                                          tile].get_height())))
+                        self.screen.blit(source=img,
+                                         dest=((x * self.grid_size_x + self.scroll_x) * self.scale,
+                                               (y * self.grid_size_y + self.scroll_y) * self.scale))
+                    else:
+                        self.screen.blit(source=self.level_objects[tile],
+                                         dest=(x * self.grid_size_x + self.scroll_x,
+                                               y * self.grid_size_y + self.scroll_y))
 
     def draw_right_panel(self) -> None:
         """
@@ -453,8 +428,8 @@ class Editor:
             last_action = self.tile_undo_tracker.pop()
             (x, y), index = last_action
             self.update_redo_tracker(coords=(x, y),
-                                     tile_index=self.world_data[y][x])
-            self.world_data[y][x] = index
+                                     tile_index=self.world_data[y, x])
+            self.world_data[y, x] = index
         except IndexError:
             return
 
@@ -474,9 +449,9 @@ class Editor:
             (x, y), index = last_action
             self.update_undo_tracker(
                 coords=(x, y),
-                tile_index=self.world_data[y][x]
+                tile_index=self.world_data[y, x]
             )
-            self.world_data[y][x] = index
+            self.world_data[y, x] = index
 
         except IndexError:
             return
@@ -487,20 +462,20 @@ class Editor:
                 removes tile in current grid location.
         """
         mouse_pos = self.mouse_pos
-        x = int((mouse_pos[0] - self.scroll_x) / self.grid_size_x)
-        y = int((mouse_pos[1] - self.scroll_y) / self.grid_size_y)
-
+        x = int((mouse_pos[0] - (self.scroll_x * self.scale)) / (self.grid_size_x * self.scale))
+        y = int((mouse_pos[1] - (self.scroll_y * self.scale)) / (self.grid_size_y * self.scale))
         # Check if within map canvas
         if mouse_pos[0] < SCREEN_WIDTH and mouse_pos[1] < SCREEN_HEIGHT:
             if pygame.mouse.get_pressed()[0] == 1:
+
                 # Add new tile if within map bounds
                 if helpers.can_place_tile(editor=self,
                                           grid_x=x,
                                           grid_y=y):
-                    old_tile_index = self.world_data[y][x]
+                    old_tile_index = self.world_data[y, x]
                     self.update_undo_tracker(coords=(x, y),
                                              tile_index=old_tile_index)
-                    self.world_data[y][x] = self.current_object
+                    self.world_data[y, x] = self.current_object
                     self.tile_redo_tracker = []
 
             elif pygame.mouse.get_pressed()[2] == 1:
@@ -508,8 +483,8 @@ class Editor:
                 if helpers.can_remove_tile(editor=self,
                                            grid_x=x,
                                            grid_y=y):
-                    old_tile_index = self.world_data[y][x]
-                    self.world_data[y][x] = -1
+                    old_tile_index = self.world_data[y, x]
+                    self.world_data[y, x] = -1
                     self.update_undo_tracker(coords=(x, y),
                                              tile_index=old_tile_index)
                     self.tile_redo_tracker = []
@@ -588,6 +563,9 @@ class Editor:
             pygame.display.set_caption(
                 f"Editing: {self.map_name} ({self.columns}x{self.rows}) @ {int(self.clock.get_fps())} fps")
 
+            # Quit
+            self.event_handler.quitting_events()
+
             # Background
             self.screen.fill((89, 160, 205))
             self.draw_background(background=self.background,
@@ -598,18 +576,15 @@ class Editor:
             if self.show_grid:
                 self.draw_grid()
 
-            if self.show_map_overview:
-                self.draw_map_overview()
-            else:
-                self.draw_map()
+            self.draw_map()
 
             # Panels
             self.draw_minimap()
             self.draw_right_panel()
             self.draw_bottom_panel()
 
-            # Events
-            self.event_handler.run()
+            # Scrolling
+            self.event_handler.scrolling_events()
 
             # Menus
             self.menu_controller.run()
@@ -630,21 +605,10 @@ class Editor:
                 if self.grid_button.draw():
                     self.show_grid = not self.show_grid
 
-                if self.map_button.draw():
-
-                    if not self.show_map_overview:
-                        self.editing_scroll_x = self.scroll_x
-                        self.editing_scroll_y = self.scroll_y
-                        self.scroll_x = 0
-                        self.scroll_y = 0
-                        self.set_overview_scale()
-                    else:
-                        self.scroll_x = self.editing_scroll_x
-                        self.scroll_y = self.editing_scroll_y
-                        self.set_default_scale()
-
-                    self.show_map_overview = not self.show_map_overview
-                    self.background = helpers.update_background(editor=self)
+                if self.zoom_in_button.draw():
+                    self.zoom_in()
+                if self.zoom_out_button.draw():
+                    self.zoom_out()
 
                 # Actual building
                 self.scroll_map()

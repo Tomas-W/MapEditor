@@ -1,5 +1,7 @@
 from typing import List, Dict, Self
 
+import numpy as np
+
 import utilities.render_text as text
 
 from settings.errors import *
@@ -74,16 +76,16 @@ class ErrorHandler:
         """
         row_errors = 0
         col_errors = 0
-        world_data: List[List[int]] = self.editor.world_data
+        world_data: np.ndarray = self.editor.world_data
         # check rows
-        if len(world_data) > self.editor.rows:
+        if world_data.shape[0] > self.editor.rows:
             # more world data rows than grid rows
             for row in world_data[self.editor.rows:]:
                 for tile in row:
                     if tile != -1:
                         row_errors += 1
-        if len(world_data[0]) > self.editor.columns:
-            col_iterator = range(self.editor.columns, len(world_data[0]))
+        if world_data.shape[1] > self.editor.columns:
+            col_iterator = range(self.editor.columns, world_data.shape[0])
             for row in world_data:
                 for i in col_iterator:
                     if row[i] != -1:

@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from typing import Any, List, Tuple
 
+import numpy as np
+
 from settings.setup import GRID_PREFERENCES_DICT
 
 
@@ -46,17 +48,17 @@ def is_new_value_allowed(name: str,
     return dict_[name]["min"] <= value <= dict_[name]["max"]
 
 
-def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
+def crop_world_data(world_data: np.ndarray) -> np.ndarray:
     """
         Removes all rows and columns, descending, that contain only -1 values.
 
         Args:
-            world_data (List[List[int]]): Nested list containing tile indexes of the map.
+            world_data (np.ndarray): Nested list containing tile indexes of the map.
 
         Returns:
-            List[List[int]]: Cropped version of world_data
+            np.ndarray: Cropped version of world_data
     """
-    old_rows, old_cols = len(world_data), len(world_data[0])
+    old_rows, old_cols = world_data.shape
     new_rows, new_cols = get_grid_max_row_col(world_data=world_data)
 
     min_rows = GRID_PREFERENCES_DICT["rows"]["min"]
@@ -68,16 +70,14 @@ def crop_world_data(world_data: List[List[int]]) -> List[List[int]]:
     if new_cols < min_cols:
         new_cols = min_cols
 
-    world_data = world_data[:new_rows]
+    world_data = world_data[:new_rows, :]
 
-    new_world_data = []
-    for row in world_data:
-        new_world_data.append(row[:new_cols])
+    new_world_data = world_data[:, :new_cols]
 
     return new_world_data
 
 
-def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
+def get_grid_max_row_col(world_data: np.ndarray) -> Tuple[int, int]:
     """
         Get the number of rows and columns that can be removed from the end of world_data.
         First value is the number of rows, descending, that contain no -1.
@@ -89,7 +89,7 @@ def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
         Returns:
             Tuple[int, int]: Number of rows and columns that can be safely removed.
     """
-    rows_to_keep = len(world_data)
+    rows_to_keep = world_data.shape[0]
     for row in world_data[::-1]:
         if all(index == -1 for index in row):
             rows_to_keep -= 1
@@ -105,13 +105,19 @@ def get_grid_max_row_col(world_data: List[List[int]]) -> Tuple[int, int]:
     return rows_to_keep, cols_to_keep
 
 
-def update_world_data_size(editor: Any) -> None:
-    rows_to_add = editor.rows - len(editor.world_data)
-    cols_to_add = editor.columns - len(editor.world_data[0])
+def update_world_data_size(editor: Any,
+                           name: str,
+                           value: int) -> None:
+    if name == "rows":
+        if value > editor.rows:
+            rows = np.full((value - editor.rows, editor.world_data.shape[1]), -1)
+            editor.world_data = np.vstack((editor.world_data, rows))
+        elif value < editor.rows:
+            editor.world_data = editor.world_data[:value, :]
 
-    for row in editor.world_data:
-        for x in range(cols_to_add):
-            row.append(-1)
-
-    for x in range(rows_to_add):
-        editor.world_data.append([-1 for _ in range(editor.columns)])
+    elif name == "columns":
+        if value > editor.columns:
+            cols = np.full((editor.world_data.shape[0], value - editor.columns), -1)
+            editor.world_data = np.hstack((editor.world_data, cols))
+        elif value < editor.columns:
+            editor.world_data = editor.world_data[:, :value - editor.columns]

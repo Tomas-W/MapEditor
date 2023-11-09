@@ -3,6 +3,7 @@ from typing import Any, List, Tuple
 import pygame
 
 from menu_manager.edit_menu import utils
+from menu_manager.edit_menu.utils import get_grid_max_row_col
 
 from utilities import render_text, fonts, helpers
 
@@ -65,15 +66,33 @@ def display_preferences(menu_renderer: Any) -> None:
 
             menu_renderer.editor.selected_preference_value = menu_renderer.editor.selected_preference_value_change
 
+            # Update settings (row, col, grid ect)
             attributes_dict = {
                 menu_renderer.editor.selected_preference_name: int(
                     menu_renderer.editor.selected_preference_value)
             }
+            # CHECK OUT OF BOUNDS AND GIVE ERROR
+            max_rows, max_cols = get_grid_max_row_col(world_data=menu_renderer.editor.world_data)
+
+            if menu_renderer.editor.selected_preference_name == "rows" and int(
+                    menu_renderer.editor.selected_preference_value) <= max_rows:
+                update = False
+            elif menu_renderer.editor.selected_preference_name == "columns" and int(
+                    menu_renderer.editor.selected_preference_value) <= max_cols:
+                update = False
+            else:
+                update = True
+
+            if update:
+                utils.update_world_data_size(editor=menu_renderer.editor,
+                                             name=menu_renderer.editor.selected_preference_name,
+                                             value=int(
+                                                 menu_renderer.editor.selected_preference_value))
+
             helpers.update_class_dict(cls=menu_renderer.editor,
                                       attributes=attributes_dict)
             menu_renderer.editor.background = helpers.update_background(editor=menu_renderer.editor)
             menu_renderer.preferences_dict = utils.get_preferences_dict(editor=menu_renderer.editor)
-            utils.update_world_data_size(editor=menu_renderer.editor)
 
         else:
             print(
