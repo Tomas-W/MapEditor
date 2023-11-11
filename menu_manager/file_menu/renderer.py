@@ -2,10 +2,10 @@ from typing import Any, List
 
 import pygame
 
-from menu_manager.file_menu import screens
+from menu_manager.file_menu import screens, actions
 from menu_manager.file_menu import utils
 
-from utilities import buttons, helpers
+from utilities import buttons
 
 from settings.setup import DARK_ORANGE
 from settings.buttons import FILE_BTN, SAVE_BTN, LOAD_BTN, NAME_BTN, NEW_BTN, BACK_BTN, OK_BTN
@@ -13,10 +13,12 @@ from settings.buttons import FILE_BTN, SAVE_BTN, LOAD_BTN, NAME_BTN, NEW_BTN, BA
 
 class FileMenuRenderer:
     """
-        Responsible for rendering all File Menu features.
-        Blits File Menu Category buttons to the screen,
-            sets the correct File Menu state in the MenuController and
-            loads the correct screen.
+        Responsible for rendering all File Menu features and controlling the user interaction
+            with the Editor.
+        Draws File Menu buttons to the screen depending on MenuController state,
+            sets the correct  MenuController state,
+            loads the correct screen and
+            applies changes to the Editor.
     """
 
     def __init__(self,
@@ -49,37 +51,6 @@ class FileMenuRenderer:
         # Trackers
         self.clicked = False
 
-    def draw_file_menu_button(self) -> None:
-        """
-            Blits File Menu button to the screen and sets the state to 'file_menu' if
-                the user clicks the button.
-
-            Returns:
-                None
-        """
-        if self.file_button.draw():
-            self.menu_controller.set_state("file_menu")
-
-    def draw_file_menu(self) -> None:
-        """
-            Blits buttons related to the File Menu to the screen and sets the correct state when
-                the user clicks one of them.
-
-            Returns:
-            None
-        """
-        if self.save_button.draw():
-            self.menu_controller.set_state("saving_map")
-
-        if self.load_button.draw():
-            self.menu_controller.set_state("loading_map")
-
-        if self.name_button.draw():
-            self.menu_controller.set_state("renaming_map")
-
-        if self.new_button.draw():
-            self.menu_controller.set_state("restarting_map")
-
     def pressed_ok_button(self) -> bool:
         """
             Draws an OK button on the screen and returns True if the user clicked
@@ -100,26 +71,91 @@ class FileMenuRenderer:
         """
         return self.back_button.draw()
 
+    def draw_file_menu_button(self) -> None:
+        """
+            Blits File Menu button to the screen and sets the state to 'file_menu' if
+                the user clicks the button.
+
+            Returns:
+                None
+        """
+        if self.file_button.draw():
+            self.menu_controller.set_state("file_menu")
+
+    def draw_file_menu(self) -> None:
+        """
+            Draws all buttons in the File Menu category to the screen and
+                sets the MenuController state to the corresponding state if the user clicked on it.
+
+            Returns:
+                None
+        """
+        if self.save_button.draw():
+            self.menu_controller.set_state("saving_map")
+
+        if self.load_button.draw():
+            self.menu_controller.set_state("loading_map")
+
+        if self.name_button.draw():
+            self.menu_controller.set_state("renaming_map")
+
+        if self.new_button.draw():
+            self.menu_controller.set_state("restarting_map")
+
     def draw_save_map_menu(self) -> None:
-        utils.save_map_details(editor=self.editor)
+        """
+            Draws save map menu to the screen
+            Draws OK and BACK buttons to the screen to apply or discard the changes
+                and switch back to the correct state after.
+
+            Returns:
+                None.
+        """
+        actions.save_map_details(editor=self.editor)
         self.menu_controller.set_state("reset")
 
     def draw_load_map_menu(self) -> None:
+        """
+            Draws load map menu to the screen,
+                draws names of all maps in the MAPS_DIR,
+                highlights user selected/hovered map.
+            Draws OK and BACK buttons to the screen to load map or discard the changes
+                and switch back to the correct state after.
+
+            Returns:
+                None.
+        """
         self.editor.screen.fill(DARK_ORANGE)
         screens.display_load_map(menu_renderer=self)
         selected_map = screens.highlight_selected_map(menu_renderer=self)
         if selected_map is not None:
-            map_attributes = utils.deserialize_map_details(editor=self.editor,
-                                                           map_name=selected_map)
-            helpers.update_class_dict(cls=self.editor,
-                                      attributes=map_attributes)
+            actions.load_new_map(editor=self.editor,
+                                 selected_map=selected_map)
             self.menu_controller.set_state("reset")
 
     def draw_rename_map_menu(self) -> None:
+        """
+            Draws rename map menu to the screen,
+                draws name of the map,
+                listens for user input to change the name.
+            Draws OK and BACK buttons to the screen to save the name or discard the changes
+                and switch back to the correct state after.
+
+            Returns:
+                None.
+        """
         self.editor.screen.fill(DARK_ORANGE)
         screens.display_rename(menu_renderer=self)
         self.menu_controller.event_handler.get_map_name_input()
 
     def draw_restart_map_menu(self) -> None:
+        """
+            Draws restart map menu to the screen.
+            Draws OK and BACK buttons to the screen to restart the Editor or discard the changes
+                and switch back to the correct state after.
+
+            Returns:
+                None.
+        """
         self.editor.restart_map()
         self.menu_controller.set_state("restarting_map")

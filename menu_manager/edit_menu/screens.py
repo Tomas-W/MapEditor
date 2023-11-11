@@ -1,9 +1,14 @@
+"""
+Menu drawing functions for the Edit Menu.
+All functions draw to the screen.
+These functions do NOT interact with the program directly.
+"""
+
 from typing import Any, List, Tuple
 
 import pygame
 
-from menu_manager.edit_menu import utils
-from menu_manager.edit_menu.utils import get_grid_max_row_col
+from menu_manager.edit_menu import actions
 
 from utilities import render_text, fonts, helpers
 
@@ -16,6 +21,10 @@ def display_preferences(menu_renderer: Any) -> None:
             with the currently selected attribute and value.
         This is text only and obtained from MenuRenderer.preferences_dict and
             editor.selected_preference_name.
+        Draws OK and BACK buttons to the screen to apply or discard the changes
+                and switch back to the correct state after.
+        Pressing OK will call manage_preferences_change() and
+            pressing BACK will rest the MenuController state.
 
        Returns:
            None.
@@ -56,63 +65,19 @@ def display_preferences(menu_renderer: Any) -> None:
 
     # Menu Options
     if menu_renderer.pressed_ok_button():
-        if utils.is_new_value_allowed(name=menu_renderer.editor.selected_preference_name,
-                                      value=int(
-                                          menu_renderer.editor.selected_preference_value_change)):
-            print(
-                f"setting: '{menu_renderer.editor.selected_preference_name}'"
-                f" changed from '{menu_renderer.editor.selected_preference_value}'"
-                f" to '{menu_renderer.editor.selected_preference_value_change}'")
-
-            menu_renderer.editor.selected_preference_value = menu_renderer.editor.selected_preference_value_change
-
-            # Update settings (row, col, grid ect)
-            attributes_dict = {
-                menu_renderer.editor.selected_preference_name: int(
-                    menu_renderer.editor.selected_preference_value)
-            }
-            # CHECK OUT OF BOUNDS AND GIVE ERROR
-            max_rows, max_cols = get_grid_max_row_col(world_data=menu_renderer.editor.world_data)
-
-            if menu_renderer.editor.selected_preference_name == "rows" and int(
-                    menu_renderer.editor.selected_preference_value) <= max_rows:
-                update = False
-            elif menu_renderer.editor.selected_preference_name == "columns" and int(
-                    menu_renderer.editor.selected_preference_value) <= max_cols:
-                update = False
-            else:
-                update = True
-
-            if update:
-                utils.update_world_data_size(editor=menu_renderer.editor,
-                                             name=menu_renderer.editor.selected_preference_name,
-                                             value=int(
-                                                 menu_renderer.editor.selected_preference_value))
-
-            helpers.update_class_dict(cls=menu_renderer.editor,
-                                      attributes=attributes_dict)
-            menu_renderer.editor.background = helpers.update_background(editor=menu_renderer.editor)
-            menu_renderer.preferences_dict = utils.get_preferences_dict(editor=menu_renderer.editor)
-
-        else:
-            print(
-                f"setting: '{menu_renderer.editor.selected_preference_name}'"
-                f" cannot be value: '{menu_renderer.editor.selected_preference_value_change}'")
+        actions.manage_preferences_change(menu_renderer=menu_renderer)
 
     if menu_renderer.pressed_back_button():
         menu_renderer.menu_controller.set_state("reset")
 
 
-def highlight_selected_preference(menu_renderer: Any) -> None | Tuple[str, int]:
+def highlight_and_return_selected_preference(menu_renderer: Any) -> None | Tuple[str, int]:
     """
-        Highlights the preference the user is currently hovering over.
-
-        Uses:
-           screen (pygame.display): Editor window.
-           saved_maps_outline_rects (list): All recs containing the preferences.
+        Highlights and returns the preference and value the user is currently
+            hovering over/selecting by listening for a collision event/mouse click.
 
        Returns:
-           Union[None, Tuple[str, int]].
+           None | Tuple[str, int]: None or selected preference and its value.
     """
     for i, outline_rect in enumerate(menu_renderer.preferences_outline_recs):
         if outline_rect.collidepoint(menu_renderer.editor.mouse_pos):
@@ -123,9 +88,6 @@ def highlight_selected_preference(menu_renderer: Any) -> None | Tuple[str, int]:
                 width=5
             )
             if pygame.mouse.get_pressed()[0] == 1:
-                menu_renderer.editor.selected_preference_value_change = \
-                    list(menu_renderer.preferences_dict.items())[i][-1]
-
-                return list(menu_renderer.preferences_dict.items())[i]
+                return list(menu_renderer.preferences_dict.items())[i]  # is still a Tuple
 
     return None

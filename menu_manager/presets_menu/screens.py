@@ -1,3 +1,9 @@
+"""
+Menu drawing functions for the Preset Menu.
+All functions draw to the screen.
+These functions do NOT interact with the program directly.
+"""
+
 from typing import Any, List
 
 import pygame

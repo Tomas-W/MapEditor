@@ -8,9 +8,9 @@ from menu_manager.edit_menu.renderer import EditMenuRenderer
 class MenuController:
     """
         Top level class for Menu management. Responsible for all menus throughout the Editor.
-        Blits Menu Category buttons to the screen,
+        Draws Menu Category buttons to the screen,
             keeps track of all states and
-             calls the correct MenuRenderer to handle the menu itself.
+            calls the correct MenuRenderer to handle the menu itself.
 
         Args:
             editor (Any): Current Editor instance.
@@ -25,6 +25,8 @@ class MenuController:
         self.event_handler = self.editor.event_handler
 
         # States
+        self.is_displaying_presets = False
+
         self.is_in_file_menu = False
         self.is_in_edit_menu = False
 
@@ -55,6 +57,8 @@ class MenuController:
             case "reset":
                 self.editor.is_building = True
 
+                self.is_displaying_presets = False
+
                 self.is_saving_map = False
                 self.is_loading_map = False
                 self.is_renaming_map = False
@@ -66,6 +70,10 @@ class MenuController:
 
             case "building":
                 self.set_state("reset")
+
+            case "preset_menu":
+                self.is_displaying_presets = not self.is_displaying_presets
+                self.editor.is_displaying_presets = not self.editor.is_displaying_presets
 
             case "file_menu":
                 self.is_in_file_menu = not self.is_in_file_menu

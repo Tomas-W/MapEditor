@@ -1,9 +1,27 @@
+"""
+Utility functions for the Edit Menu.
+All functions return data.
+These functions do NOT interact with the program directly.
+"""
+
 from collections import OrderedDict
 from typing import Any, List, Tuple
 
 import numpy as np
 
 from settings.setup import GRID_PREFERENCES_DICT
+
+
+def get_preferences_accepted_text(pref_name: str,
+                                  pref_value: int,
+                                  pref_value_change: int) -> None:
+    return f"Setting: '{pref_name}' changed from '{pref_value}' to '{pref_value_change}'"
+
+
+def get_preferences_denied_text(pref_name: str,
+                                pref_value: int,
+                                pref_value_change: int) -> None:
+    return f"Setting: '{pref_name}' can not change from '{pref_value}' to '{pref_value_change}'"
 
 
 def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
@@ -58,7 +76,6 @@ def crop_world_data(world_data: np.ndarray) -> np.ndarray:
         Returns:
             np.ndarray: Cropped version of world_data
     """
-    old_rows, old_cols = world_data.shape
     new_rows, new_cols = get_grid_max_row_col(world_data=world_data)
 
     min_rows = GRID_PREFERENCES_DICT["rows"]["min"]
@@ -103,21 +120,3 @@ def get_grid_max_row_col(world_data: np.ndarray) -> Tuple[int, int]:
                 cols_to_keep = max(cols_to_keep, i + 1)
 
     return rows_to_keep, cols_to_keep
-
-
-def update_world_data_size(editor: Any,
-                           name: str,
-                           value: int) -> None:
-    if name == "rows":
-        if value > editor.rows:
-            rows = np.full((value - editor.rows, editor.world_data.shape[1]), -1)
-            editor.world_data = np.vstack((editor.world_data, rows))
-        elif value < editor.rows:
-            editor.world_data = editor.world_data[:value, :]
-
-    elif name == "columns":
-        if value > editor.columns:
-            cols = np.full((editor.world_data.shape[0], value - editor.columns), -1)
-            editor.world_data = np.hstack((editor.world_data, cols))
-        elif value < editor.columns:
-            editor.world_data = editor.world_data[:, :value - editor.columns]

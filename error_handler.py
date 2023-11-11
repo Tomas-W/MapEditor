@@ -17,27 +17,6 @@ class ErrorHandler:
 
         self.error_messages: Dict[str, str] = {}
 
-        self.row_errors = None
-        self.col_errors = None
-
-        self.set_preset_error()
-        self.set_tile_error()
-
-    def reset_errors(self) -> None:
-        """
-            Resets all error messages to None.
-
-            Returns:
-                None.
-        """
-        self.error_messages: List[str] = []
-
-        self.row_errors = None
-        self.col_errors = None
-
-        self.set_preset_error()
-        self.set_tile_error()
-
     def set_preset_error(self) -> None:
         """
             Sets preset error message if more presets are loaded than can be drawn.
@@ -91,8 +70,6 @@ class ErrorHandler:
                     if row[i] != -1:
                         col_errors += 1
 
-        self.row_errors = row_errors
-        self.col_errors = col_errors
         if row_errors > 0 or col_errors > 0:
             self.error_messages["grid"] = OUT_OF_BOUNDS_ERROR
 

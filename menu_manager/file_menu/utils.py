@@ -1,3 +1,9 @@
+"""
+Utility functions for the File Menu.
+All functions return data.
+These functions do NOT interact with the program directly.
+"""
+
 import os
 import pickle
 from typing import Any, Dict, List, Tuple
@@ -17,30 +23,8 @@ def get_saved_maps_names() -> List[str]:
     return os.listdir(MAPS_DIR)
 
 
-def save_map_details(editor: Any) -> None:
-    """
-        Serializes map-dependent variables into pickle format and
-            saves it under the maps name.
-
-        Args:
-            editor (any): Current Editor object.
-    """
-    save_data = [
-        editor.rows,
-        editor.columns,
-        editor.grid_size_x,
-        editor.grid_size_y,
-        editor.world_data
-    ]
-
-    with open(file=os.path.join(MAPS_DIR, editor.map_name),
-              mode="wb") as pickle_out:
-        pickle.dump(obj=save_data,
-                    file=pickle_out)
-
-
-def deserialize_map_details(editor: Any,
-                            map_name: str) -> Dict:
+def get_deserialized_map_details(editor: Any,
+                                 map_name: str) -> Dict:
     """
         Deserialize a pickled map and load the attributes into a dict.
 

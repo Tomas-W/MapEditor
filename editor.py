@@ -117,7 +117,6 @@ class Editor:
         self.is_running = True
         self.is_building = True
 
-        # Presets
         self.is_displaying_presets = False
 
         # Quick menu
@@ -313,30 +312,6 @@ class Editor:
                                RIGHT_MARGIN,
                                SCREEN_HEIGHT),
                          width=0)
-
-    def load_new_preset(self, selected_preset: str) -> None:
-        """
-            Loads all settings for the selected preset.
-
-            Args:
-                 selected_preset (str): Name of the preset to load.
-        """
-        self.current_preset = selected_preset
-        self.current_tile = 0
-
-        self.current_object = general.get_tile_indexes(
-            preset_name=self.current_preset)[0]
-        self.tile_list = sprites.get_preset_sprites(
-            preset_name=self.current_preset
-        )
-        self.tile_names = general.get_tile_names(
-            preset_name=self.current_preset
-        )
-        self.tile_buttons = buttons.get_tile_buttons(
-            preset_name=self.current_preset,
-            editor=self
-        )
-        self.is_displaying_presets = False
 
     def draw_and_select_tile(self) -> None:
         """
@@ -591,6 +566,8 @@ class Editor:
 
             # Errors
             self.error_handler.set_out_of_bounds_error()
+            self.error_handler.set_preset_error()
+            self.error_handler.set_tile_error()
             self.error_handler.display_error_messages()
 
             # Quick menu events
@@ -612,6 +589,7 @@ class Editor:
 
                 # Actual building
                 self.scroll_map()
+                self.is_displaying_presets = self.menu_controller.is_displaying_presets
                 if not self.is_displaying_presets:
                     # Tile selection
                     self.draw_and_select_tile()
