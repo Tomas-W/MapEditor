@@ -118,9 +118,9 @@ def manage_preferences_change(menu_renderer: Any) -> None:
         # check if tiles are outside the new world_data size
         max_rows, max_cols = utils.get_grid_max_row_col(world_data=menu_renderer.editor.world_data)
 
-        if menu_renderer.editor.selected_preference_name == "rows" and pref_value_change <= max_rows:
+        if menu_renderer.editor.selected_preference_name == "rows" and pref_value_change < max_rows:
             update = False
-        elif menu_renderer.editor.selected_preference_name == "columns" and pref_value_change <= max_cols:
+        elif menu_renderer.editor.selected_preference_name == "columns" and pref_value_change < max_cols:
             update = False
         else:
             update = True

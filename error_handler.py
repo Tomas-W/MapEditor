@@ -1,12 +1,12 @@
-from typing import List, Dict, Self
+from typing import Dict, Self
 
 import numpy as np
 
 import utilities.render_text as text
-
+import utilities.fonts as fonts
 from settings.errors import *
 
-import utilities.fonts as fonts
+from settings.panels import *
 
 
 class ErrorHandler:
@@ -15,7 +15,24 @@ class ErrorHandler:
                  editor: any) -> Self:
         self.editor = editor
 
+        self.ERROR_COLOR = ERROR_COLOR
+        self.ERROR_X = ERROR_X
+        self.ERROR_Y = ERROR_Y
+        self.ERROR_Y_SPACING = ERROR_Y_SPACING
+
         self.error_messages: Dict[str, str] = {}
+
+        self.OUT_OF_BOUNDS_ERROR = f"Map cannot be saved." \
+                                   f" Tiles found outside of grid." \
+                                   f" Change map size or remove tiles."
+
+        self.MAX_NR_PRESETS = MAX_NR_PRESETS
+        self.MAX_PRESETS_ERROR = f"Not all presets loaded." \
+                                 f" Editor can only hold {MAX_NR_PRESETS} presets."
+
+        self.MAX_NR_TILES = MAX_NR_TILES
+        self.MAX_TILES_ERROR = f"Not all tiles are loaded." \
+                               f" Editor can only hold {MAX_NR_TILES} tiles but found "
 
     def set_preset_error(self) -> None:
         """
@@ -25,8 +42,8 @@ class ErrorHandler:
             Returns:
             None.
         """
-        if len(self.editor.preset_names) > MAX_NR_PRESETS:
-            self.error_messages["preset"] = MAX_PRESETS_ERROR
+        if len(self.editor.preset_names) > self.MAX_NR_PRESETS:
+            self.error_messages["preset"] = self.MAX_PRESETS_ERROR
 
         else:
             self.error_messages["preset"] = None
@@ -39,8 +56,8 @@ class ErrorHandler:
             Returns:
             None.
         """
-        if len(self.editor.tile_names) > MAX_NR_TILES:
-            self.error_messages["tile"] = f"{MAX_TILES_ERROR} {len(self.editor.tile_names)} in a preset folder."
+        if len(self.editor.tile_names) > self.MAX_NR_TILES:
+            self.error_messages["tile"] = f"{self.MAX_TILES_ERROR} {len(self.editor.tile_names)} in a preset folder."
 
         else:
             self.error_messages["tile"] = None
@@ -71,7 +88,7 @@ class ErrorHandler:
                         col_errors += 1
 
         if row_errors > 0 or col_errors > 0:
-            self.error_messages["grid"] = OUT_OF_BOUNDS_ERROR
+            self.error_messages["grid"] = self.OUT_OF_BOUNDS_ERROR
 
         else:
             self.error_messages["grid"] = None
@@ -91,7 +108,7 @@ class ErrorHandler:
                 screen=self.editor.screen,
                 text=error,
                 font=fonts.error_font,
-                color=ERROR_COLOR,
-                x_pos=ERROR_X,
-                y_pos=ERROR_Y + i * ERROR_Y_SPACING
+                color=self.ERROR_COLOR,
+                x_pos=self.ERROR_X,
+                y_pos=self.ERROR_Y + i * self.ERROR_Y_SPACING
             )

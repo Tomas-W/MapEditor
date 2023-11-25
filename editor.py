@@ -39,10 +39,13 @@ class Editor:
         self.temp_map_name: str = self.map_name
         self.sky = sprites.sky_img
         self.background = sprites.background_img
+        self.background_backup = sprites.background_img
         self.og_background_size = self.background.get_size()
 
-        self.rows = ROWS
         self.columns = COLUMNS
+        self.max_visible_cols = np.ceil(SCREEN_WIDTH / GRID_SIZE_X)
+        self.rows = ROWS
+        self.max_visible_rows = np.ceil(SCREEN_HEIGHT / GRID_SIZE_Y)
         self.grid_size_x = GRID_SIZE_X
         self.grid_size_y = GRID_SIZE_Y
         self.world_data: np.ndarray = general.get_fresh_world_data(
@@ -60,9 +63,6 @@ class Editor:
         self.scroll_speed = BASE_SCROLL_SPEED
         self.base_scroll_speed = BASE_SCROLL_SPEED
         self.max_scroll_speed = MAX_SCROLL_SPEED
-        # Save position for switching between build- and overview
-        self.editing_scroll_x = 0
-        self.editing_scroll_y = 0
 
         # Events
         self.event_handler = EventHandler(editor=self)
@@ -95,6 +95,7 @@ class Editor:
 
         # Tiles
         self.level_objects: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
+        self.level_objects_backup: Dict[int, pygame.Surface] = sprites.get_all_level_objects()
         self.tile_list: List[pygame.Surface] = sprites.get_preset_sprites(
             preset_name=self.current_preset
         )
@@ -131,23 +132,84 @@ class Editor:
     def __str__(self) -> str:
         return f"Editing: {self.map_name}"
 
+    def scale_level_objects(self) -> None:
+        """
+            Scales all level objects by the Editor's scale.
+            Is called by zoom in- and out functions.
+
+            Returns: None
+        """
+        for (index, tile) in self.level_objects.items():
+            self.level_objects[index] = pygame.transform.scale(self.level_objects_backup[index],
+                                                               (int(self.scale *
+                                                                    self.level_objects_backup[
+                                                                        index].get_width()),
+                                                                int(self.scale *
+                                                                    self.level_objects_backup[
+                                                                        index].get_height())
+                                                                ))
+
+    def set_visible_cols_rows(self) -> None:
+        """
+            Sets the number of columns and rows that can be seen by the user by
+                checking the screen size, grid size and scale.
+            Is called by zoom in- and out functions.
+
+            Returns:
+                None
+        """
+        self.max_visible_cols = int(np.ceil(SCREEN_WIDTH / (self.grid_size_x * self.scale)))
+        self.max_visible_rows = int(np.ceil(SCREEN_HEIGHT / (self.grid_size_y * self.scale)))
+
     def zoom_in(self) -> None:
+        """
+            Scales up all map features by increasing the scale by 0.2 up to
+                a set maximum.
+
+            Returns:
+                None
+        """
         if self.scale < 1.8:
-            print("in")
-            self.scale += 0.2
+            self.scale = round(self.scale + 0.2, 1)
+
+            self.scale_level_objects()
+            self.background = helpers.update_background(editor=self)
+            self.set_visible_cols_rows()
 
     def zoom_out(self) -> None:
+        """
+            Scales down all map features by decreasing the scale by 0.2 down to
+                a set minimum.
+
+            Returns:
+                None
+        """
         if self.scale > 0.4:
-            print("out")
-            self.scale -= 0.2
+            self.scale = round(self.scale - 0.2, 1)
+
+            self.scale_level_objects()
+            self.background = helpers.update_background(editor=self)
+            self.set_visible_cols_rows()
 
     def wipe_map(self):
+        """
+            Sets all world_data array items to -1.
+
+            Returns:
+                None
+        """
         self.world_data: np.ndarray = general.get_fresh_world_data(
             columns=self.columns,
             rows=self.rows
         )
 
     def restart_map(self) -> None:
+        """
+            Sets all Editor attributes to their default state to mimic a restart.
+
+            Returns:
+                None
+        """
         self.map_name: str = "New map"
         self.temp_map_name: str = self.map_name
 
@@ -172,9 +234,6 @@ class Editor:
         self.scroll_speed = BASE_SCROLL_SPEED
         self.base_scroll_speed = BASE_SCROLL_SPEED
         self.max_scroll_speed = MAX_SCROLL_SPEED
-        # Save position for switching between build- and overview
-        self.editing_scroll_x = 0
-        self.editing_scroll_y = 0
 
         # Menus
         self.menu_controller = MenuController(editor=self)  # to allow adding new presets
@@ -227,30 +286,27 @@ class Editor:
         """
         if self.scroll_left:
             self.scroll_x += self.scroll_speed
+
         if self.scroll_right:
             self.scroll_x -= self.scroll_speed
+
         if self.scroll_up:
             self.scroll_y += self.scroll_speed
+
         if self.scroll_down:
             self.scroll_y -= self.scroll_speed
 
     def draw_background(self,
-                        background: pygame.Surface,
                         scroll_x: int,
                         scroll_y: int) -> None:
         """
             Blits the background image to the screen.
 
             Args:
-                background (pygame.Surface): Background image of the map.
                 scroll_x (int): X coordinate of background.topleft.
                 scroll_y (int): Y coordinate of background.topleft.
         """
-        if self.scale != 1:
-            background = pygame.transform.scale(self.background,
-                                                (int(self.background.get_width() * self.scale),
-                                                 int(self.background.get_height() * self.scale)))
-        self.screen.blit(background,
+        self.screen.blit(self.background,
                          (scroll_x * self.scale, scroll_y * self.scale))
 
     def draw_grid(self) -> None:
@@ -280,25 +336,32 @@ class Editor:
 
     def draw_map(self) -> None:
         """
-            Loops over self.world_data and draws all objects.
+            Draws all level objects to the screen.
+            Checks current viewport and only blits objects that are contained within.
+
+            Returns:
+                None
         """
-        for y, row in enumerate(self.world_data):
-            for x, col in enumerate(row):
-                tile = self.world_data[y, x]
+        start_col = int(-self.scroll_x / self.grid_size_x) if self.scroll_x < 0 else 0
+        start_row = int(-self.scroll_y / self.grid_size_y) if self.scroll_y < 0 else 0
+
+        # bottom or right is off-screen
+        if start_col > self.columns or start_row > self.rows:
+            return
+
+        # top or left is off-screen
+        if self.scroll_x * self.scale > SCREEN_WIDTH or self.scroll_y * self.scale > SCREEN_HEIGHT:
+            return
+
+        stop_col = int(np.ceil(self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale)))
+        stop_row = int(np.ceil(self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale)))
+
+        for (y, x), tile in np.ndenumerate(self.world_data):
+            if start_col <= x <= stop_col and start_row <= y <= stop_row:
                 if tile > -1:
-                    if self.scale != 1:
-                        img = pygame.transform.scale(self.level_objects[tile],
-                                                     (int(self.scale * self.level_objects[
-                                                         tile].get_width()),
-                                                      int(self.scale * self.level_objects[
-                                                          tile].get_height())))
-                        self.screen.blit(source=img,
-                                         dest=((x * self.grid_size_x + self.scroll_x) * self.scale,
-                                               (y * self.grid_size_y + self.scroll_y) * self.scale))
-                    else:
-                        self.screen.blit(source=self.level_objects[tile],
-                                         dest=(x * self.grid_size_x + self.scroll_x,
-                                               y * self.grid_size_y + self.scroll_y))
+                    self.screen.blit(source=self.level_objects[tile],
+                                     dest=((x * self.grid_size_x + self.scroll_x) * self.scale,
+                                           (y * self.grid_size_y + self.scroll_y) * self.scale))
 
     def draw_right_panel(self) -> None:
         """
@@ -477,6 +540,9 @@ class Editor:
                                BOTTOM_MARGIN),
                          width=0)
 
+    def draw_minimap_panel(self) -> None:
+        pass
+
     def draw_minimap(self) -> None:
         """
             Blits minimap section and view to the screen.
@@ -522,8 +588,8 @@ class Editor:
                                      rect=(
                                          map_outline.topleft[0] - self.scroll_x * scale_factor,
                                          map_outline.topleft[1] - self.scroll_y * scale_factor,
-                                         SCREEN_WIDTH * scale_factor,
-                                         SCREEN_HEIGHT * scale_factor
+                                         (SCREEN_WIDTH * scale_factor) / self.scale,
+                                         (SCREEN_HEIGHT * scale_factor) / self.scale
                                      ),
                                      width=MAP_VIEW_OUTLINE_WIDTH)
 
@@ -543,8 +609,7 @@ class Editor:
 
             # Background
             self.screen.fill((89, 160, 205))
-            self.draw_background(background=self.background,
-                                 scroll_x=self.scroll_x,
+            self.draw_background(scroll_x=self.scroll_x,
                                  scroll_y=self.scroll_y)
 
             # Grid
@@ -554,7 +619,9 @@ class Editor:
             self.draw_map()
 
             # Panels
+            self.draw_minimap_panel()
             self.draw_minimap()
+
             self.draw_right_panel()
             self.draw_bottom_panel()
 
@@ -598,6 +665,6 @@ class Editor:
                     self.place_and_remove_tiles()
 
             pygame.display.update()
-            self.clock.tick(FPS)
+            self.clock.tick(120)
 
         pygame.quit()

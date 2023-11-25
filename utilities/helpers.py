@@ -6,10 +6,10 @@ from settings.setup import *
 
 
 def update_background(editor: Any) -> pygame.Surface:
-    return pygame.transform.scale(surface=editor.background,
+    return pygame.transform.scale(surface=editor.background_backup,
                                   size=(
-                                      editor.columns * editor.grid_size_x,
-                                      editor.rows * editor.grid_size_y
+                                      (editor.columns * editor.grid_size_x) * editor.scale,
+                                      (editor.rows * editor.grid_size_y) * editor.scale
                                   ))
 
 
@@ -57,7 +57,6 @@ def can_place_tile(editor: any,
     try:
         test = editor.world_data[grid_y, grid_x]
     except IndexError:
-        print("no here")
         return False
 
     if test == editor.current_object:
@@ -65,12 +64,10 @@ def can_place_tile(editor: any,
 
     # Check top and left boundaries
     if grid_x < 0 or grid_y < 0:
-        print("there")
         return False
 
     # Check bottom and right boundaries
     if grid_x >= editor.columns or grid_y >= editor.rows:
-        print("here")
         return False
 
     return True

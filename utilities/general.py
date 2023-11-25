@@ -6,6 +6,22 @@ from settings.panels import *
 from settings.paths import *
 
 
+def get_filled_world_data(columns: int,
+                          rows: int) -> np.array:
+    """
+        Gets a Numpy 2d array of size columns * rows
+            where each item is 40.
+
+        Args:
+            columns (int): Number of columns.
+            rows (int): Number of rows.
+
+        Returns:
+            np.array: Numpy 2d array where each item is -1.
+    """
+    return np.full((rows, columns), 40)
+
+
 def get_fresh_world_data(columns: int,
                          rows: int) -> np.array:
     """
