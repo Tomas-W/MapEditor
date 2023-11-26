@@ -43,11 +43,17 @@ WIPE_BUTTON_X = PREF_BUTTON_X
 WIPE_BUTTON_Y = EDIT_BUTTON_Y
 
 # General Menu
-BACK_BUTTON_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 - BUTTON_WIDTH * 1.25
-BACK_BUTTON_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - 50
+BACK_BUTTON_LARGE_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 - BUTTON_WIDTH * 1.25
+BACK_BUTTON_LARGE_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - 75
 
-OK_BUTTON_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 + BUTTON_WIDTH * 0.25
-OK_BUTTON_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - 50
+OK_BUTTON_LARGE_X = (SCREEN_WIDTH + RIGHT_MARGIN) // 2 + BUTTON_WIDTH * 0.25
+OK_BUTTON_LARGE_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - 75
+
+BACK_BUTTON_SMALL_X = SCREEN_WIDTH / 2 - BUTTON_WIDTH * 1.25
+BACK_BUTTON_SMALL_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - BUTTON_HEIGHT * 1.5
+
+OK_BUTTON_SMALL_X = SCREEN_WIDTH / 2 + BUTTON_WIDTH * 0.25
+OK_BUTTON_SMALL_Y = SCREEN_HEIGHT + BOTTOM_MARGIN - BUTTON_HEIGHT * 1.5
 
 # Quick Menu
 UNDO_BUTTON_X = SCREEN_WIDTH - (BUTTON_WIDTH + BUTTON_MARGIN_X) * 2
@@ -153,17 +159,33 @@ WIPE_BTN = {
 }
 
 # General Menu
-BACK_BTN = {
-    "x": BACK_BUTTON_X,
-    "y": BACK_BUTTON_Y,
+BACK_BTN_LARGE = {
+    "x": BACK_BUTTON_LARGE_X,
+    "y": BACK_BUTTON_LARGE_Y,
     "image": back_button_image,
     "scale": 1,
     "name": "back_btn",
 }
 
-OK_BTN = {
-    "x": OK_BUTTON_X,
-    "y": OK_BUTTON_Y,
+OK_BTN_LARGE = {
+    "x": OK_BUTTON_LARGE_X,
+    "y": OK_BUTTON_LARGE_Y,
+    "image": ok_button_image,
+    "scale": 1,
+    "name": "ok_btn",
+}
+
+BACK_BTN_SMALL = {
+    "x": BACK_BUTTON_SMALL_X,
+    "y": BACK_BUTTON_SMALL_Y,
+    "image": back_button_image,
+    "scale": 1,
+    "name": "back_btn",
+}
+
+OK_BTN_SMALL = {
+    "x": OK_BUTTON_SMALL_X,
+    "y": OK_BUTTON_SMALL_Y,
     "image": ok_button_image,
     "scale": 1,
     "name": "ok_btn",

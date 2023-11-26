@@ -8,7 +8,7 @@ from menu_manager.edit_menu import utils
 
 from utilities import buttons, helpers
 
-from settings.buttons import EDIT_BTN, PREF_BTN, CROP_BTN, BACK_BTN, OK_BTN, WIPE_BTN
+from settings.buttons import EDIT_BTN, PREF_BTN, CROP_BTN, BACK_BTN_LARGE, OK_BTN_LARGE, WIPE_BTN
 from settings.setup import DARK_ORANGE
 
 
@@ -27,6 +27,7 @@ class EditMenuRenderer:
         # References
         self.editor = menu_controller.editor
         self.menu_controller = menu_controller
+        self.popup_renderer = menu_controller.popup_renderer
 
         # Info
         self.preferences_dict: OrderedDict[str, int] = utils.get_preferences_dict(
@@ -45,9 +46,9 @@ class EditMenuRenderer:
                                                       **WIPE_BTN)
 
         self.back_button = buttons.get_utility_button(editor=self.editor,
-                                                      **BACK_BTN)
+                                                      **BACK_BTN_LARGE)
         self.ok_button = buttons.get_utility_button(editor=self.editor,
-                                                    **OK_BTN)
+                                                    **OK_BTN_LARGE)
 
         # Trackers
         self.clicked = False
@@ -94,12 +95,15 @@ class EditMenuRenderer:
         if self.pref_button.draw():
             actions.prepare_preferences_menu(editor=self.editor,
                                              edit_menu_renderer=self)
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("changing_preferences")
 
-        if self.crop_button.draw():
+        elif self.crop_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("cropping_map")
 
-        if self.wipe_button.draw():
+        elif self.wipe_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("wiping_map")
 
     def draw_preferences_menu(self) -> None:
@@ -133,11 +137,18 @@ class EditMenuRenderer:
             Returns:
                 None.
         """
-        self.editor.world_data = utils.crop_world_data(world_data=self.editor.world_data)
-        self.editor.rows = self.editor.world_data.shape[0]
-        self.editor.columns = self.editor.world_data.shape[1]
-        self.editor.background = helpers.update_background(editor=self.editor)
-        self.menu_controller.set_state("reset")
+        self.popup_renderer.display_popup_title(text=self.popup_renderer.crop_map_title)
+        self.popup_renderer.display_popup_info(text=self.popup_renderer.crop_map_info)
+
+        if self.popup_renderer.pressed_back_button():
+            self.menu_controller.set_state("reset")
+
+        if self.popup_renderer.pressed_ok_button():
+            self.editor.world_data = utils.crop_world_data(world_data=self.editor.world_data)
+            self.editor.rows = self.editor.world_data.shape[0]
+            self.editor.columns = self.editor.world_data.shape[1]
+            self.editor.background = helpers.update_background(editor=self.editor)
+            self.menu_controller.set_state("reset")
 
     def draw_wipe_menu(self) -> None:
         """
@@ -149,5 +160,12 @@ class EditMenuRenderer:
             Returns:
                 None.
         """
-        self.editor.wipe_map()
-        self.menu_controller.set_state("reset")
+        self.popup_renderer.display_popup_title(text=self.popup_renderer.wipe_map_title)
+        self.popup_renderer.display_popup_info(text=self.popup_renderer.wipe_map_info)
+
+        if self.popup_renderer.pressed_back_button():
+            self.menu_controller.set_state("reset")
+
+        if self.popup_renderer.pressed_ok_button():
+            self.editor.wipe_map()
+            self.menu_controller.set_state("reset")

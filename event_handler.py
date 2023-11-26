@@ -62,6 +62,21 @@ class EventHandler:
         if not keys[pygame.K_LSHIFT]:
             self.editor.scroll_speed = self.editor.base_scroll_speed
 
+    def get_map_name_input2(self) -> None:
+        """
+            Listens for keydown events to change the name of the map.
+        """
+        for events in self.editor.events:
+            if events.type == pygame.KEYDOWN:
+
+                if events.key == pygame.K_BACKSPACE:
+                    # Delete last character
+                    self.editor.temp_map_name = self.editor.temp_map_name[:-1]
+
+                else:
+                    # Add new character to end
+                    self.editor.temp_map_name += events.unicode
+
     # Called from menu_handler
     def get_map_name_input(self) -> None:
         """

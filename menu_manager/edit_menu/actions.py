@@ -3,7 +3,6 @@ Action functions for the Edit Menu.
 None of the functions return data.
 These functions interact with the program directly.
 """
-
 from typing import Any, Tuple
 
 import numpy as np

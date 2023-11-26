@@ -13,7 +13,7 @@ from settings.paths import MAPS_DIR
 from utilities import helpers
 
 
-def save_map_details(editor: Any) -> None:
+def save_map(editor: Any) -> None:
     """
         Serializes map-dependent variables into pickle format and
             saves it under the maps name.

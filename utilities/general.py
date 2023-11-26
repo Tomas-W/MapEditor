@@ -57,8 +57,8 @@ def get_sorted_tile_names(preset_name: str) -> List[str]:
     return tile_names
 
 
-def limit_string_length(string_list: List[str],
-                        max_length: int) -> List[str]:
+def limit_string_length(string_list: List[str] | str,
+                        max_length: int) -> List[str] | str:
     """
         Gets a list of strings and limit the length to the given maximum.
         If length is longer, name wil be cut and .. will be appended.
@@ -71,6 +71,9 @@ def limit_string_length(string_list: List[str],
             list[str]: List of strings that ar cut off at max_length and have
                 .. appended.
     """
+    if type(string_list) == str or len(string_list) == 1:
+        return string_list[:max_length + 1]
+
     for i, name in enumerate(string_list):
         if len(name) > max_length:
             string_list[i] = name[:max_length + 1] + ".."

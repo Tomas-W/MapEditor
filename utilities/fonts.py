@@ -14,6 +14,8 @@ load_map_font = pygame.font.SysFont(name=FONT,
                                     size=40)
 preferences_font = pygame.font.SysFont(name=FONT,
                                        size=40)
+popup_font = pygame.font.SysFont(name=FONT,
+                                 size=32)
 
 # Errors
 error_font = pygame.font.SysFont(name=FONT,

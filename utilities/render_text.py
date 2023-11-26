@@ -43,6 +43,7 @@ def centered_x(screen: pygame.Surface,
                font: pygame.font.Font,
                color: Tuple[int, int, int],
                y_pos: int,
+               full_width: bool = True,
                get_rect: bool = False):
     """
        Generic function to draw text on center of x-axis of screen.
@@ -53,6 +54,7 @@ def centered_x(screen: pygame.Surface,
            font (pygame.font.Font): pygame.font object.
            color (tuple[int, int, int]): Text color in RGB format.
            y_pos (int): Text y-position.
+           full_width (bool): Center of whole screen (True) or center of view area (False).
            get_rect (bool, optional): Flag to indicate if position information is needed.
                Default is False.
 
@@ -61,9 +63,15 @@ def centered_x(screen: pygame.Surface,
                (x-position, y-position, width, height) of the rendered text.
                Otherwise, returns None.
     """
-    image = font.render(text, True, color)
-    rect = image.get_rect()
-    screen.blit(image, ((SCREEN_WIDTH + RIGHT_MARGIN) // 2 - rect.width // 2, y_pos))
+    if full_width:
+        image = font.render(text, True, color)
+        rect = image.get_rect()
+        screen.blit(image, ((SCREEN_WIDTH + RIGHT_MARGIN) // 2 - rect.width // 2, y_pos))
+
+    else:
+        image = font.render(text, True, color)
+        rect = image.get_rect()
+        screen.blit(image, (SCREEN_WIDTH // 2 - rect.width // 2, y_pos))
 
     if get_rect:
         centered_rect = image.get_rect()

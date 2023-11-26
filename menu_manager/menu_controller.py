@@ -1,5 +1,6 @@
 from typing import Any, Self
 
+from menu_manager.popup_menu.renderer import PopupMenuRenderer
 from menu_manager.presets_menu.renderer import PresetsMenuRenderer
 from menu_manager.file_menu.renderer import FileMenuRenderer
 from menu_manager.edit_menu.renderer import EditMenuRenderer
@@ -18,6 +19,7 @@ class MenuController:
         Returns:
             Self.
     """
+
     def __init__(self,
                  editor: Any) -> Self:
         # References
@@ -40,6 +42,7 @@ class MenuController:
         self.is_wiping_map = False
 
         # Renderers
+        self.popup_renderer = PopupMenuRenderer(menu_controller=self)
         self.presets_renderer = PresetsMenuRenderer(menu_controller=self)
         self.file_menu_renderer = FileMenuRenderer(menu_controller=self)
         self.edit_menu_renderer = EditMenuRenderer(menu_controller=self)
@@ -55,6 +58,7 @@ class MenuController:
         match state:
 
             case "reset":
+                print("im here")
                 self.editor.is_building = True
 
                 self.is_displaying_presets = False
@@ -83,6 +87,16 @@ class MenuController:
                 self.is_in_edit_menu = not self.is_in_edit_menu
                 self.is_in_file_menu = False
 
+            case "close_sub_menus":
+                self.is_saving_map = False
+                self.is_loading_map = False
+                self.is_renaming_map = False
+                self.is_restarting_map = False
+
+                self.is_changing_preferences = False
+                self.is_cropping_map = False
+                self.is_wiping_map = False
+
             case "saving_map":
                 self.set_state("reset")
                 self.editor.is_building = False
@@ -99,7 +113,9 @@ class MenuController:
                 self.is_renaming_map = True
 
             case "restarting_map":
-                self.is_restarting_map = not self.is_restarting_map
+                self.set_state("reset")
+                self.editor.is_building = False
+                self.is_restarting_map = True
 
             case "changing_preferences":
                 self.set_state("reset")
@@ -108,10 +124,12 @@ class MenuController:
 
             case "cropping_map":
                 self.set_state("reset")
+                self.editor.is_building = False
                 self.is_cropping_map = True
 
             case "wiping_map":
                 self.set_state("reset")
+                self.editor.is_building = False
                 self.is_wiping_map = True
 
     def run(self) -> None:
@@ -123,6 +141,16 @@ class MenuController:
              Returns:
                  None
         """
+        # print(
+        #     self.editor.is_building,
+        #     self.is_saving_map,
+        #     self.is_loading_map,
+        #     self.is_renaming_map,
+        #     self.is_restarting_map,
+        #     self.is_changing_preferences,
+        #     self.is_cropping_map,
+        #     self.is_wiping_map
+        # )
         # Presets
         self.presets_renderer.draw_presets_button()
 

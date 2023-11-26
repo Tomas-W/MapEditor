@@ -8,7 +8,7 @@ from menu_manager.file_menu import utils
 from utilities import buttons
 
 from settings.setup import DARK_ORANGE
-from settings.buttons import FILE_BTN, SAVE_BTN, LOAD_BTN, NAME_BTN, NEW_BTN, BACK_BTN, OK_BTN
+from settings.buttons import FILE_BTN, SAVE_BTN, LOAD_BTN, NAME_BTN, NEW_BTN, BACK_BTN_LARGE, OK_BTN_LARGE
 
 
 class FileMenuRenderer:
@@ -26,10 +26,12 @@ class FileMenuRenderer:
         # References
         self.editor = menu_controller.editor
         self.menu_controller = menu_controller
+        self.popup_renderer = self.menu_controller.popup_renderer
 
         # Info
         self.saved_maps_names: List[str] = utils.get_saved_maps_names()
         self.saved_maps_outline_rects: List[pygame.rect.Rect] = []
+        self.selected_map: str = None
 
         # Buttons
         self.file_button = buttons.get_utility_button(editor=self.editor,
@@ -44,9 +46,9 @@ class FileMenuRenderer:
                                                      **NEW_BTN)
 
         self.back_button = buttons.get_utility_button(editor=self.editor,
-                                                      **BACK_BTN)
+                                                      **BACK_BTN_LARGE)
         self.ok_button = buttons.get_utility_button(editor=self.editor,
-                                                    **OK_BTN)
+                                                    **OK_BTN_LARGE)
 
         # Trackers
         self.clicked = False
@@ -91,28 +93,44 @@ class FileMenuRenderer:
                 None
         """
         if self.save_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("saving_map")
 
-        if self.load_button.draw():
+        elif self.load_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("loading_map")
 
-        if self.name_button.draw():
+        elif self.name_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("renaming_map")
 
-        if self.new_button.draw():
+        elif self.new_button.draw():
+            self.menu_controller.set_state("close_sub_menus")
             self.menu_controller.set_state("restarting_map")
 
     def draw_save_map_menu(self) -> None:
         """
-            Draws save map menu to the screen
+            Draws save map menu to the screen.
             Draws OK and BACK buttons to the screen to apply or discard the changes
                 and switch back to the correct state after.
 
             Returns:
                 None.
         """
-        actions.save_map_details(editor=self.editor)
-        self.menu_controller.set_state("reset")
+        self.popup_renderer.display_popup_title(text=self.popup_renderer.save_map_title)
+        self.popup_renderer.display_popup_info(text=self.popup_renderer.save_map_info)
+
+        self.menu_controller.event_handler.get_map_name_input2()
+        self.popup_renderer.save_map_info = self.editor.temp_map_name
+
+        if self.popup_renderer.pressed_back_button():
+            self.editor.temp_map_name = self.editor.map_name
+            self.menu_controller.set_state("reset")
+
+        if self.popup_renderer.pressed_ok_button():
+            self.editor.map_name = self.editor.temp_map_name
+            actions.save_map(editor=self.editor)
+            self.menu_controller.set_state("reset")
 
     def draw_load_map_menu(self) -> None:
         """
@@ -127,11 +145,6 @@ class FileMenuRenderer:
         """
         self.editor.screen.fill(DARK_ORANGE)
         screens.display_load_map(menu_renderer=self)
-        selected_map = screens.highlight_selected_map(menu_renderer=self)
-        if selected_map is not None:
-            actions.load_new_map(editor=self.editor,
-                                 selected_map=selected_map)
-            self.menu_controller.set_state("reset")
 
     def draw_rename_map_menu(self) -> None:
         """
@@ -144,9 +157,19 @@ class FileMenuRenderer:
             Returns:
                 None.
         """
-        self.editor.screen.fill(DARK_ORANGE)
-        screens.display_rename(menu_renderer=self)
-        self.menu_controller.event_handler.get_map_name_input()
+        self.popup_renderer.display_popup_title(text=self.popup_renderer.rename_map_title)
+        self.popup_renderer.display_popup_info(text=self.popup_renderer.rename_map_info)
+
+        self.menu_controller.event_handler.get_map_name_input2()
+        self.popup_renderer.rename_map_info = self.editor.temp_map_name
+
+        if self.popup_renderer.pressed_back_button():
+            self.editor.temp_map_name = self.editor.map_name
+            self.menu_controller.set_state("reset")
+
+        if self.popup_renderer.pressed_ok_button():
+            self.editor.map_name = self.editor.temp_map_name
+            self.menu_controller.set_state("reset")
 
     def draw_restart_map_menu(self) -> None:
         """
@@ -157,5 +180,12 @@ class FileMenuRenderer:
             Returns:
                 None.
         """
-        self.editor.restart_map()
-        self.menu_controller.set_state("restarting_map")
+        self.popup_renderer.display_popup_title(text=self.popup_renderer.restart_map_title)
+        self.popup_renderer.display_popup_info(text=self.popup_renderer.restart_map_info)
+
+        if self.popup_renderer.pressed_back_button():
+            self.menu_controller.set_state("reset")
+
+        if self.popup_renderer.pressed_ok_button():
+            self.editor.restart_map()
+            self.menu_controller.set_state("reset")

@@ -9,7 +9,7 @@ from typing import Any, List
 
 import pygame
 
-from menu_manager.file_menu import utils
+from menu_manager.file_menu import utils, actions
 
 from utilities import fonts, render_text, helpers
 
@@ -48,6 +48,37 @@ def display_load_map(menu_renderer: Any) -> None:
 
     menu_renderer.saved_maps_outline_rects = saved_maps_outline_rects
 
+    # Highlight and select
+    highlight_selected_map(menu_renderer=menu_renderer)
+    if menu_renderer.selected_map is not None:
+        # Blit load map name
+        render_text.centered_x(screen=menu_renderer.editor.screen,
+                               text=LOAD_MAP_TEXT,
+                               font=fonts.load_map_font,
+                               color=SAVED_MAPS_COLOR,
+                               y_pos=LOAD_MAP_NAME_Y,
+                               get_rect=False)
+        # Blit selected map name
+        render_text.centered_x(screen=menu_renderer.editor.screen,
+                               text=menu_renderer.selected_map,
+                               font=fonts.load_map_font,
+                               color=SAVED_MAPS_COLOR,
+                               y_pos=SELECTED_MAP_NAME_Y,
+                               get_rect=False)
+
+    # Cancel and return
+    if menu_renderer.back_button.draw():
+        menu_renderer.selected_map = None
+        menu_renderer.menu_controller.set_state("reset")
+
+    # Load map if selected and return
+    if menu_renderer.ok_button.draw():
+        if menu_renderer.selected_map is not None:
+            actions.load_new_map(editor=menu_renderer.editor,
+                                 selected_map=menu_renderer.selected_map)
+            menu_renderer.selected_map = None
+            menu_renderer.menu_controller.set_state("reset")
+
 
 def highlight_selected_map(menu_renderer: Any) -> None | str:
     """
@@ -71,15 +102,13 @@ def highlight_selected_map(menu_renderer: Any) -> None | str:
             if menu_renderer.clicked:
                 for event in menu_renderer.editor.events:
                     if event.type == pygame.MOUSEBUTTONUP:
-                        return menu_renderer.saved_maps_names[i]
+                        menu_renderer.selected_map = menu_renderer.saved_maps_names[i]
 
             if pygame.mouse.get_pressed()[0] == 1:
                 menu_renderer.clicked = True
 
             else:
                 menu_renderer.clicked = False
-
-    return None
 
 
 def display_rename(menu_renderer: Any) -> None:
@@ -115,4 +144,5 @@ def display_rename(menu_renderer: Any) -> None:
     # Save new map name
     if menu_renderer.ok_button.draw():
         menu_renderer.editor.map_name = menu_renderer.editor.temp_map_name
+        menu_renderer.menu_controller.popup_renderer.set_save_map_info()
         menu_renderer.menu_controller.set_state("reset")
