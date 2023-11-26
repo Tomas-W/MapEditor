@@ -44,7 +44,11 @@ class Editor:
 
         self.columns = COLUMNS
         self.max_visible_cols = np.ceil(SCREEN_WIDTH / GRID_SIZE_X)
+        self.start_col = None
+        self.stop_col = None
         self.rows = ROWS
+        self.start_row = None
+        self.stop_row = None
         self.max_visible_rows = np.ceil(SCREEN_HEIGHT / GRID_SIZE_Y)
         self.grid_size_x = GRID_SIZE_X
         self.grid_size_y = GRID_SIZE_Y
@@ -161,6 +165,15 @@ class Editor:
         self.max_visible_cols = int(np.ceil(SCREEN_WIDTH / (self.grid_size_x * self.scale)))
         self.max_visible_rows = int(np.ceil(SCREEN_HEIGHT / (self.grid_size_y * self.scale)))
 
+    def set_col_row_length(self) -> None:
+        self.start_col = int(-self.scroll_x / self.grid_size_x) if self.scroll_x < 0 else 0
+        self.start_row = int(-self.scroll_y / self.grid_size_y) if self.scroll_y < 0 else 0
+
+        self.stop_col = int(np.ceil(
+            self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale)))
+        self.stop_row = int(np.ceil(
+            self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale)))
+
     def zoom_in(self) -> None:
         """
             Scales up all map features by increasing the scale by 0.2 up to
@@ -190,6 +203,10 @@ class Editor:
             self.scale_level_objects()
             self.background = helpers.update_background(editor=self)
             self.set_visible_cols_rows()
+            self.world_data = general.get_filled_world_data(
+                columns=self.columns,
+                rows=self.rows
+            )
 
     def wipe_map(self):
         """
@@ -356,12 +373,17 @@ class Editor:
         stop_col = int(np.ceil(self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale)))
         stop_row = int(np.ceil(self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale)))
 
-        for (y, x), tile in np.ndenumerate(self.world_data):
-            if start_col <= x <= stop_col and start_row <= y <= stop_row:
-                if tile > -1:
-                    self.screen.blit(source=self.level_objects[tile],
-                                     dest=((x * self.grid_size_x + self.scroll_x) * self.scale,
-                                           (y * self.grid_size_y + self.scroll_y) * self.scale))
+        subset = self.world_data[start_row:stop_row + 1, start_col:stop_col + 1]
+
+        blit_list = []
+        for (y, x), tile in np.ndenumerate(subset):
+            if tile > -1:
+                x_pos = ((x + start_col) * self.grid_size_x + self.scroll_x) * self.scale
+                y_pos = ((y + start_row) * self.grid_size_y + self.scroll_y) * self.scale
+
+                blit_list.append((self.level_objects[tile], (x_pos, y_pos)))
+
+        self.screen.blits(blit_list)
 
     def draw_right_panel(self) -> None:
         """
