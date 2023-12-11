@@ -187,5 +187,5 @@ class FileMenuRenderer:
             self.menu_controller.set_state("reset")
 
         if self.popup_renderer.pressed_ok_button():
-            self.editor.restart_map()
+            self.editor.reload_editor()
             self.menu_controller.set_state("reset")

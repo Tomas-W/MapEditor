@@ -24,7 +24,7 @@ import utilities.fonts as fonts
 import utilities.general as general
 import utilities.helpers as helpers
 import utilities.sprites as sprites
-import utilities.render_text as text
+import utilities.render_text as render_text
 
 
 class Editor:
@@ -37,33 +37,40 @@ class Editor:
 
         self.map_name: str = "New map"
         self.temp_map_name: str = self.map_name
-        self.sky = sprites.sky_img
+        # self.sky = sprites.sky_img
         self.background = sprites.background_img
         self.background_backup = sprites.background_img
-        self.og_background_size = self.background.get_size()
+        self.og_background_size = self.background_backup.get_size()
 
         self.columns = COLUMNS
         self.max_visible_cols = np.ceil(SCREEN_WIDTH / GRID_SIZE_X)
-        self.start_col = None
-        self.stop_col = None
+        self.start_col = 0
+        self.stop_col = self.columns
         self.rows = ROWS
-        self.start_row = None
-        self.stop_row = None
         self.max_visible_rows = np.ceil(SCREEN_HEIGHT / GRID_SIZE_Y)
+        self.start_row = 0
+        self.stop_row = self.rows
+
         self.grid_size_x = GRID_SIZE_X
         self.grid_size_y = GRID_SIZE_Y
-        self.world_data: np.ndarray = general.get_fresh_world_data(
+        self.world_data: np.ndarray = general.get_filled_world_data(
             columns=self.columns,
             rows=self.rows
         )
 
         # Scrolling
+        self.may_scroll_to: dict[str, bool] = {
+            "left": True,
+            "right": True,
+            "up": True,
+            "down": True
+        }
         self.scroll_left = False
         self.scroll_right = False
         self.scroll_up = False
         self.scroll_down = False
-        self.scroll_x = 0
-        self.scroll_y = 0
+        self.scroll_x = -(COLUMNS * self.grid_size_x) + SCREEN_WIDTH / 2
+        self.scroll_y = -(ROWS * self.grid_size_y) + SCREEN_HEIGHT / 2
         self.scroll_speed = BASE_SCROLL_SPEED
         self.base_scroll_speed = BASE_SCROLL_SPEED
         self.max_scroll_speed = MAX_SCROLL_SPEED
@@ -127,6 +134,8 @@ class Editor:
         # Quick menu
         self.show_grid = True
         self.scale = 1
+        self.center_col = self.columns // 2
+        self.center_row = self.rows // 2
 
         # Errors
         self.error_handler = ErrorHandler(editor=self)
@@ -136,12 +145,114 @@ class Editor:
     def __str__(self) -> str:
         return f"Editing: {self.map_name}"
 
+    def set_scroll_restrictions(self) -> None:
+        """
+            Stops user from scrolling off the grid completely by disallowing to scroll
+                when MIN_VISIBLE_ROWS/COLS is reached.
+        """
+        # Scrolled too far up
+        if self.stop_row < MIN_VISIBLE_COLS:
+            self.scroll_y -= (abs(self.stop_row) + 3) * self.grid_size_y
+
+        # Scrolled too far down
+        elif self.start_row > self.rows - MIN_VISIBLE_ROWS:
+            self.scroll_y += (self.start_row - self.rows + 3) * self.grid_size_x
+
+        # Scrolled too far left
+        if self.stop_col < MIN_VISIBLE_COLS:
+            self.scroll_x -= (abs(self.stop_col) + 3) * self.grid_size_x
+
+        # Scrolled too far right
+        elif self.start_col > self.columns - MIN_VISIBLE_ROWS:
+            self.scroll_x += (self.start_col - self.rows + 3) * self.grid_size_x
+
+        if self.start_col >= self.columns - MIN_VISIBLE_COLS:
+            self.may_scroll_to["right"] = False
+        else:
+            self.may_scroll_to["right"] = True
+
+        if self.stop_col <= MIN_VISIBLE_COLS:
+            self.may_scroll_to["left"] = False
+        else:
+            self.may_scroll_to["left"] = True
+
+        if self.start_row >= self.rows - MIN_VISIBLE_ROWS:
+            self.may_scroll_to["down"] = False
+        else:
+            self.may_scroll_to["down"] = True
+
+        if self.stop_row <= MIN_VISIBLE_ROWS:
+            self.may_scroll_to["up"] = False
+        else:
+            self.may_scroll_to["up"] = True
+
+    def scroll_map(self) -> None:
+        """
+            Scrolls the map based on scroll speed and restrictions.
+        """
+
+        if self.scroll_left and self.may_scroll_to["left"]:
+            self.scroll_x += self.scroll_speed
+
+        if self.scroll_right and self.may_scroll_to["right"]:
+            self.scroll_x -= self.scroll_speed
+
+        if self.scroll_up and self.may_scroll_to["up"]:
+            self.scroll_y += self.scroll_speed
+
+        if self.scroll_down and self.may_scroll_to["down"]:
+            self.scroll_y -= self.scroll_speed
+
+    def set_visible_cols_rows(self) -> None:
+        """
+            Sets the number of columns and rows that can be seen by the user by
+                checking the screen size, grid size and scale.
+            Is called by zoom in- and out functions.
+        """
+        self.max_visible_cols = int(np.ceil(SCREEN_WIDTH / (self.grid_size_x * self.scale)))
+        self.max_visible_rows = int(np.ceil(SCREEN_HEIGHT / (self.grid_size_y * self.scale)))
+
+    def set_col_start_stop(self) -> None:
+        """
+            Sets first and last column checking scroll_x, grid_size_x,
+                max_visible_cols and scale.
+            Is called by zoom in- and out functions.
+        """
+        self.start_col = int(-self.scroll_x / self.grid_size_x) if self.scroll_x < 0 else 0
+        self.stop_col = min(int(np.ceil(
+            self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale))), self.columns)
+
+    def set_row_start_stop(self) -> None:
+        """
+            Sets first and last row by checking scroll_y, grid_size_y,
+                max_visible_rows and scale.
+            Is called by zoom in- and out functions.
+        """
+        self.start_row = int(-self.scroll_y / self.grid_size_y) if self.scroll_y < 0 else 0
+        self.stop_row = min(int(np.ceil(
+            self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale))), self.rows)
+
+    def set_center_col_row(self) -> None:
+        """
+            Sets center column and row in the current users view by checking
+                start and stop column and row.
+            Is called by zoom in- and out functions.
+        """
+        self.center_col = (self.start_col + self.stop_col) // 2
+        self.center_row = (self.start_row + self.stop_row) // 2
+
+    def set_new_scroll(self) -> None:
+        self.scroll_x += (self.center_col - (
+                self.start_col + self.stop_col) / 2) * self.grid_size_x * (
+                                 1 - 1 / self.scale)
+        self.scroll_y += (self.center_row - (
+                self.start_row + self.stop_row) / 2) * self.grid_size_y * (
+                                 1 - 1 / self.scale)
+
     def scale_level_objects(self) -> None:
         """
             Scales all level objects by the Editor's scale.
             Is called by zoom in- and out functions.
-
-            Returns: None
         """
         for (index, tile) in self.level_objects.items():
             self.level_objects[index] = pygame.transform.scale(self.level_objects_backup[index],
@@ -153,85 +264,68 @@ class Editor:
                                                                         index].get_height())
                                                                 ))
 
-    def set_visible_cols_rows(self) -> None:
-        """
-            Sets the number of columns and rows that can be seen by the user by
-                checking the screen size, grid size and scale.
-            Is called by zoom in- and out functions.
-
-            Returns:
-                None
-        """
-        self.max_visible_cols = int(np.ceil(SCREEN_WIDTH / (self.grid_size_x * self.scale)))
-        self.max_visible_rows = int(np.ceil(SCREEN_HEIGHT / (self.grid_size_y * self.scale)))
-
-    def set_col_row_length(self) -> None:
-        self.start_col = int(-self.scroll_x / self.grid_size_x) if self.scroll_x < 0 else 0
-        self.start_row = int(-self.scroll_y / self.grid_size_y) if self.scroll_y < 0 else 0
-
-        self.stop_col = int(np.ceil(
-            self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale)))
-        self.stop_row = int(np.ceil(
-            self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale)))
-
     def zoom_in(self) -> None:
         """
             Scales up all map features by increasing the scale by 0.2 up to
                 a set maximum.
-
-            Returns:
-                None
         """
         if self.scale < 1.8:
             self.scale = round(self.scale + 0.2, 1)
 
+            self.set_visible_cols_rows()
+            self.set_col_start_stop()
+            self.set_row_start_stop()
+            self.set_center_col_row()
+
+            self.set_new_scroll()
+
             self.scale_level_objects()
             self.background = helpers.update_background(editor=self)
-            self.set_visible_cols_rows()
 
     def zoom_out(self) -> None:
         """
             Scales down all map features by decreasing the scale by 0.2 down to
                 a set minimum.
-
-            Returns:
-                None
         """
         if self.scale > 0.4:
             self.scale = round(self.scale - 0.2, 1)
 
+            self.set_visible_cols_rows()
+            self.set_col_start_stop()
+            self.set_row_start_stop()
+            self.set_center_col_row()
+
+            self.set_new_scroll()
+
             self.scale_level_objects()
             self.background = helpers.update_background(editor=self)
-            self.set_visible_cols_rows()
-            self.world_data = general.get_filled_world_data(
-                columns=self.columns,
-                rows=self.rows
-            )
 
     def wipe_map(self):
         """
             Sets all world_data array items to -1.
-
-            Returns:
-                None
         """
         self.world_data: np.ndarray = general.get_fresh_world_data(
             columns=self.columns,
             rows=self.rows
         )
 
-    def restart_map(self) -> None:
+    def reload_editor(self) -> None:
         """
             Sets all Editor attributes to their default state to mimic a restart.
-
-            Returns:
-                None
         """
         self.map_name: str = "New map"
         self.temp_map_name: str = self.map_name
+        self.background = sprites.background_img
 
-        self.rows = ROWS
         self.columns = COLUMNS
+        self.max_visible_cols = np.ceil(SCREEN_WIDTH / GRID_SIZE_X)
+        self.start_col = 0
+        self.stop_col = self.columns
+        self.rows = ROWS
+        self.max_visible_rows = np.ceil(SCREEN_HEIGHT / GRID_SIZE_Y)
+        self.start_row = 0
+        self.stop_row = self.rows
+
         self.grid_size_x = GRID_SIZE_X
         self.grid_size_y = GRID_SIZE_Y
         self.world_data: np.ndarray = general.get_fresh_world_data(
@@ -239,9 +333,13 @@ class Editor:
             rows=self.rows
         )
 
-        self.background = helpers.update_background(editor=self)
-
         # Scrolling
+        self.may_scroll_to: dict[str, bool] = {
+            "left": True,
+            "right": True,
+            "up": True,
+            "down": True
+        }
         self.scroll_left = False
         self.scroll_right = False
         self.scroll_up = False
@@ -290,28 +388,13 @@ class Editor:
         self.is_running = True
         self.is_building = True
 
-        # Presets
         self.is_displaying_presets = False
 
         # Quick menu
         self.show_grid = True
         self.scale = 1
-
-    def scroll_map(self) -> None:
-        """
-            Scrolls the map based on scroll values.
-        """
-        if self.scroll_left:
-            self.scroll_x += self.scroll_speed
-
-        if self.scroll_right:
-            self.scroll_x -= self.scroll_speed
-
-        if self.scroll_up:
-            self.scroll_y += self.scroll_speed
-
-        if self.scroll_down:
-            self.scroll_y -= self.scroll_speed
+        self.center_col = self.columns // 2
+        self.center_row = self.rows // 2
 
     def draw_background(self,
                         scroll_x: int,
@@ -355,31 +438,15 @@ class Editor:
         """
             Draws all level objects to the screen.
             Checks current viewport and only blits objects that are contained within.
-
-            Returns:
-                None
         """
-        start_col = int(-self.scroll_x / self.grid_size_x) if self.scroll_x < 0 else 0
-        start_row = int(-self.scroll_y / self.grid_size_y) if self.scroll_y < 0 else 0
-
-        # bottom or right is off-screen
-        if start_col > self.columns or start_row > self.rows:
-            return
-
-        # top or left is off-screen
-        if self.scroll_x * self.scale > SCREEN_WIDTH or self.scroll_y * self.scale > SCREEN_HEIGHT:
-            return
-
-        stop_col = int(np.ceil(self.max_visible_cols - (self.scroll_x * self.scale) / (self.grid_size_x * self.scale)))
-        stop_row = int(np.ceil(self.max_visible_rows - (self.scroll_y * self.scale) / (self.grid_size_y * self.scale)))
-
-        subset = self.world_data[start_row:stop_row + 1, start_col:stop_col + 1]
+        # Get cols and rows in view
+        subset = self.world_data[self.start_row:self.stop_row + 1, self.start_col:self.stop_col + 1]
 
         blit_list = []
         for (y, x), tile in np.ndenumerate(subset):
             if tile > -1:
-                x_pos = ((x + start_col) * self.grid_size_x + self.scroll_x) * self.scale
-                y_pos = ((y + start_row) * self.grid_size_y + self.scroll_y) * self.scale
+                x_pos = ((x + self.start_col) * self.grid_size_x + self.scroll_x) * self.scale
+                y_pos = ((y + self.start_row) * self.grid_size_y + self.scroll_y) * self.scale
 
                 blit_list.append((self.level_objects[tile], (x_pos, y_pos)))
 
@@ -402,6 +469,7 @@ class Editor:
         """
             Draws all tiles on side panel and stores currently selected tile.
             Limits the number of tiles to MAX_NR_TILES.
+            ErrorHandler will display a message if not all tiles can be shown.
         """
         for button_count, button in enumerate(self.tile_buttons[:MAX_NR_TILES]):
             if button.draw():
@@ -412,17 +480,17 @@ class Editor:
         """
             Draws label above the tile on the side panel.
         """
-        for tile, text_ in zip(self.tile_buttons[:MAX_NR_TILES], self.tile_names[:MAX_NR_TILES]):
-            text.position(screen=self.screen,
-                          text=str(text_),
-                          font=fonts.label_font,
-                          color=TILE_LABEL_COLOR,
-                          x_pos=tile.rect.topleft[0],
-                          y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
+        for tile, label in zip(self.tile_buttons[:MAX_NR_TILES], self.tile_names[:MAX_NR_TILES]):
+            render_text.position(screen=self.screen,
+                                 text=str(label),
+                                 font=fonts.label_font,
+                                 color=TILE_LABEL_COLOR,
+                                 x_pos=tile.rect.topleft[0],
+                                 y_pos=tile.rect.topleft[1] - TILE_LABEL_Y_OFFSET)
 
     def highlight_selected_tile(self) -> None:
         """
-            Draws a red rect around the selected tile.
+            Draws highlight effect on the selected tile.
         """
         pygame.draw.rect(
             surface=self.screen,
@@ -437,8 +505,8 @@ class Editor:
                             coords: Tuple[int, int],
                             tile_index: int) -> None:
         """
-            Updates undo tracker with the tile index of the file before the new tile was placed.
-            If number of stored tiles exceeds settings.setup MAX_TILE_TRACKING,
+            Appends the tile index of the previously placed tile to the undo tracker.
+            If number of stored tiles exceeds MAX_TILE_TRACKING,
                 the first item in the array is removed.
 
             Args:
@@ -457,8 +525,8 @@ class Editor:
                             coords: int,
                             tile_index: int) -> None:
         """
-            Updates redo_tracker with the tile index of the tile before the new tile was 'un-done'.
-            If number of stored tiles exceeds settings.setup MAX_TILE_TRACKING,
+            Appends the tile index of the previously 'un-done' tile to the redo tracker.
+            If number of stored tiles exceeds MAX_TILE_TRACKING,
                 the first item in the array is removed.
 
             Args:
@@ -537,6 +605,8 @@ class Editor:
                                              tile_index=old_tile_index)
                     self.world_data[y, x] = self.current_object
                     self.tile_redo_tracker = []
+                    print(f"x={x}  y={y}")
+                    print(f"start col={self.start_col}  start row={self.start_row}")
 
             elif pygame.mouse.get_pressed()[2] == 1:
                 # Remove tile if within bounds
@@ -562,50 +632,47 @@ class Editor:
                                BOTTOM_MARGIN),
                          width=0)
 
-    def draw_minimap_panel(self) -> None:
-        pass
+    @staticmethod
+    def get_minimap_surface() -> pygame.Surface:
+        surface = pygame.Surface((
+            RIGHT_MARGIN,
+            BOTTOM_MARGIN
+        ))
+        return surface
 
     def draw_minimap(self) -> None:
         """
             Blits minimap section and view to the screen.
         """
-        minimap_background = pygame.draw.rect(surface=self.screen,
+        minimap_surface: pygame.Surface = self.get_minimap_surface()
+
+        minimap_background = pygame.draw.rect(surface=minimap_surface,
                                               color=MINIMAP_PANEL_COLOR,
                                               rect=(
-                                                  SCREEN_WIDTH,
-                                                  SCREEN_HEIGHT,
+                                                  0,
+                                                  0,
                                                   RIGHT_MARGIN,
                                                   BOTTOM_MARGIN
                                               ),
                                               width=0)
 
-        minimap_outline = pygame.draw.rect(surface=self.screen,
-                                           color=MINIMAP_OUTLINE_COLOR,
-                                           rect=(
-                                               SCREEN_WIDTH + MINIMAP_OUTLINE_WIDTH // 2,
-                                               SCREEN_HEIGHT + MINIMAP_OUTLINE_WIDTH // 2,
-                                               RIGHT_MARGIN - MINIMAP_OUTLINE_WIDTH // 2,
-                                               BOTTOM_MARGIN - MINIMAP_OUTLINE_WIDTH // 2
-                                           ),
-                                           width=MINIMAP_OUTLINE_WIDTH)
-
         scale_factor, minimap_view_width, minimap_view_height = helpers.get_minimap_dimensions(
             editor=self
         )
 
-        map_outline = pygame.draw.rect(surface=self.screen,
+        map_outline = pygame.draw.rect(surface=minimap_surface,
                                        color=MAP_OUTLINE_COLOR,
                                        rect=(
-                                           SCREEN_WIDTH + MAP_OUTLINE_WIDTH + (
+                                           MAP_OUTLINE_WIDTH + (
                                                    RIGHT_MARGIN - minimap_view_width) // 2,
-                                           SCREEN_HEIGHT + MAP_OUTLINE_WIDTH + (
+                                           MAP_OUTLINE_WIDTH + (
                                                    BOTTOM_MARGIN - minimap_view_height) // 2,
                                            minimap_view_width - MAP_OUTLINE_WIDTH,
                                            minimap_view_height - MAP_OUTLINE_WIDTH
                                        ),
                                        width=MAP_OUTLINE_WIDTH)
 
-        view_area = pygame.draw.rect(surface=self.screen,
+        view_area = pygame.draw.rect(surface=minimap_surface,
                                      color=MAP_VIEW_OUTLINE_COLOR,
                                      rect=(
                                          map_outline.topleft[0] - self.scroll_x * scale_factor,
@@ -615,19 +682,29 @@ class Editor:
                                      ),
                                      width=MAP_VIEW_OUTLINE_WIDTH)
 
+        minimap_outline = pygame.draw.rect(surface=minimap_surface,
+                                           color=MINIMAP_OUTLINE_COLOR,
+                                           rect=(
+                                               0,
+                                               0,
+                                               RIGHT_MARGIN,
+                                               BOTTOM_MARGIN
+                                           ),
+                                           width=MINIMAP_OUTLINE_WIDTH)
+
+        self.screen.blit(minimap_surface, (
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT
+        ))
+
     def run(self):
         while self.is_running:
             # General
-            # pygame.event.pump()
             self.events = pygame.event.get()
             self.keys = pygame.key.get_pressed()
             self.mouse_pos = pygame.mouse.get_pos()
-
             pygame.display.set_caption(
                 f"Editing: {self.map_name} ({self.columns}x{self.rows}) @ {int(self.clock.get_fps())} fps")
-
-            # Quit
-            self.event_handler.quitting_events()
 
             # Background
             self.screen.fill((89, 160, 205))
@@ -638,26 +715,30 @@ class Editor:
             if self.show_grid:
                 self.draw_grid()
 
+            # World
+            self.set_col_start_stop()
+            self.set_row_start_stop()
             self.draw_map()
 
             # Panels
-            self.draw_minimap_panel()
             self.draw_minimap()
-
             self.draw_right_panel()
             self.draw_bottom_panel()
 
+            # Quitting
+            self.event_handler.quitting_events()
+
             # Scrolling
             self.event_handler.scrolling_events()
-
-            # Menus
-            self.menu_controller.run()
 
             # Errors
             self.error_handler.set_out_of_bounds_error()
             self.error_handler.set_preset_error()
             self.error_handler.set_tile_error()
             self.error_handler.display_error_messages()
+
+            # Menus
+            self.menu_controller.run()
 
             # Quick menu events
             self.event_handler.undo_redo_events()
@@ -677,6 +758,7 @@ class Editor:
                     self.zoom_out()
 
                 # Actual building
+                self.set_scroll_restrictions()
                 self.scroll_map()
                 self.is_displaying_presets = self.menu_controller.is_displaying_presets
                 if not self.is_displaying_presets:
@@ -687,6 +769,6 @@ class Editor:
                     self.place_and_remove_tiles()
 
             pygame.display.update()
-            self.clock.tick(120)
+            self.clock.tick(180)
 
         pygame.quit()

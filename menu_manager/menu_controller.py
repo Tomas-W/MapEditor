@@ -58,7 +58,6 @@ class MenuController:
         match state:
 
             case "reset":
-                print("im here")
                 self.editor.is_building = True
 
                 self.is_displaying_presets = False
@@ -141,16 +140,6 @@ class MenuController:
              Returns:
                  None
         """
-        # print(
-        #     self.editor.is_building,
-        #     self.is_saving_map,
-        #     self.is_loading_map,
-        #     self.is_renaming_map,
-        #     self.is_restarting_map,
-        #     self.is_changing_preferences,
-        #     self.is_cropping_map,
-        #     self.is_wiping_map
-        # )
         # Presets
         self.presets_renderer.draw_presets_button()
 

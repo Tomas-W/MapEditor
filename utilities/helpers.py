@@ -55,11 +55,11 @@ def can_place_tile(editor: any,
     """
     # Check if object is new or already placed
     try:
-        test = editor.world_data[grid_y, grid_x]
+        tile_test = editor.world_data[grid_y, grid_x]
     except IndexError:
         return False
 
-    if test == editor.current_object:
+    if tile_test == editor.current_object:
         return False
 
     # Check top and left boundaries
@@ -70,6 +70,7 @@ def can_place_tile(editor: any,
     if grid_x >= editor.columns or grid_y >= editor.rows:
         return False
 
+    # Tile is allowed
     return True
 
 
@@ -111,9 +112,7 @@ def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
        Returns:
            tuple[float, float]: minimap size.
     """
-    # noinspection PyProtectedMember
     map_width = editor.columns * editor.grid_size_x
-    # noinspection PyProtectedMember
     map_height = editor.rows * editor.grid_size_y
 
     scale_width = RIGHT_MARGIN / map_width
