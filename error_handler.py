@@ -57,7 +57,7 @@ class ErrorHandler:
             None.
         """
         if len(self.editor.tile_names) > self.MAX_NR_TILES:
-            self.error_messages["tile"] = f"{self.MAX_TILES_ERROR} {len(self.editor.tile_names)} in a preset folder."
+            self.error_messages["tile"] = f"{self.MAX_TILES_ERROR} {len(self.editor.tile_names)} in current preset folder."
 
         else:
             self.error_messages["tile"] = None

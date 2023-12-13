@@ -14,13 +14,13 @@ from settings.setup import GRID_PREFERENCES_DICT
 
 def get_preferences_accepted_text(pref_name: str,
                                   pref_value: int,
-                                  pref_value_change: int) -> None:
+                                  pref_value_change: int) -> str:
     return f"Setting: '{pref_name}' changed from '{pref_value}' to '{pref_value_change}'"
 
 
 def get_preferences_denied_text(pref_name: str,
                                 pref_value: int,
-                                pref_value_change: int) -> None:
+                                pref_value_change: int) -> str:
     return f"Setting: '{pref_name}' can not change from '{pref_value}' to '{pref_value_change}'"
 
 

@@ -9,8 +9,8 @@ BASE_SCROLL_SPEED = 5
 MAX_SCROLL_SPEED = 15
 CHANGE_NAME_TEXT = "Provide a name:"
 
-ROWS = 200
-COLUMNS = 200
+ROWS = 100
+COLUMNS = 100
 GRID_SIZE_X = 32
 GRID_SIZE_Y = 32
 
@@ -22,11 +22,11 @@ MAX_TILE_TRACKING = 500
 GRID_PREFERENCES_DICT = {
     "rows": {
         "min": 10,
-        "max": 200,
+        "max": 500,
     },
     "columns": {
         "min": 10,
-        "max": 200,
+        "max": 500,
     },
     "grid_size_x": {
         "min": 10,

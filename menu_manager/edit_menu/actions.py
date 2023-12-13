@@ -10,6 +10,11 @@ import numpy as np
 from menu_manager.edit_menu import utils
 
 from utilities import helpers
+from utilities import render_text
+from utilities import fonts
+
+from settings.setup import WHITE
+from settings.menus import PREFERENCE_MESSAGE_Y
 
 
 def prepare_preferences_menu(editor: Any,
@@ -61,7 +66,7 @@ def apply_preference_change(menu_renderer: Any,
 
     helpers.update_class_dict(cls=menu_renderer.editor,
                               attributes=attributes_dict)
-    menu_renderer.editor.background = helpers.update_background(editor=menu_renderer.editor)
+    # menu_renderer.editor.background = helpers.update_background(editor=menu_renderer.editor)
     menu_renderer.preferences_dict = utils.get_preferences_dict(editor=menu_renderer.editor)
 
 
@@ -130,16 +135,29 @@ def manage_preferences_change(menu_renderer: Any) -> None:
                                    name=menu_renderer.editor.selected_preference_name,
                                    value=pref_value_change)
 
-            print(utils.get_preferences_accepted_text(pref_name=pref_name,
-                                                      pref_value=pref_value,
-                                                      pref_value_change=pref_value_change))
+            accepted_text = utils.get_preferences_accepted_text(pref_name=pref_name,
+                                                                pref_value=pref_value,
+                                                                pref_value_change=pref_value_change)
+            # Blit change successful tet
+            render_text.centered_x(screen=menu_renderer.editor.screen,
+                                   text=accepted_text,
+                                   font=fonts.popup_font,
+                                   color=WHITE,
+                                   y_pos=PREFERENCE_MESSAGE_Y)
 
-        apply_preference_change(menu_renderer=menu_renderer,
-                                pref_name=pref_name,
-                                pref_value_change=pref_value_change)
+            apply_preference_change(menu_renderer=menu_renderer,
+                                    pref_name=pref_name,
+                                    pref_value_change=pref_value_change)
 
     else:
         # new size is not accepted
-        print(utils.get_preferences_denied_text(pref_name=pref_name,
-                                                pref_value=pref_value,
-                                                pref_value_change=pref_value_change))
+        denied_text = utils.get_preferences_denied_text(
+            pref_name=pref_name,
+            pref_value=pref_value,
+            pref_value_change=pref_value_change)
+        # Blit denied text
+        render_text.centered_x(screen=menu_renderer.editor.screen,
+                               text=denied_text,
+                               font=fonts.popup_font,
+                               color=WHITE,
+                               y_pos=PREFERENCE_MESSAGE_Y)

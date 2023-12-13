@@ -147,7 +147,7 @@ class EditMenuRenderer:
             self.editor.world_data = utils.crop_world_data(world_data=self.editor.world_data)
             self.editor.rows = self.editor.world_data.shape[0]
             self.editor.columns = self.editor.world_data.shape[1]
-            self.editor.background = helpers.update_background(editor=self.editor)
+            # self.editor.background = helpers.update_background(editor=self.editor)
             self.menu_controller.set_state("reset")
 
     def draw_wipe_menu(self) -> None:

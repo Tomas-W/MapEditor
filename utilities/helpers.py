@@ -5,12 +5,25 @@ import pygame
 from settings.setup import *
 
 
+# obsolete
 def update_background(editor: Any) -> pygame.Surface:
     return pygame.transform.scale(surface=editor.background_backup,
                                   size=(
                                       (editor.columns * editor.grid_size_x) * editor.scale,
                                       (editor.rows * editor.grid_size_y) * editor.scale
                                   ))
+
+
+def get_scaled_backgrounds(background: pygame.Surface) -> dict[str, pygame.Surface]:
+    scales = [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6]
+    backgrounds: dict[str, pygame.Surface] = {}
+    for scale in scales:
+        backgrounds[str(scale)] = pygame.transform.scale(surface=background,
+                                                         size=(
+                                                             (background.get_width() * scale),
+                                                             (background.get_height() * scale)
+                                                         ))
+    return backgrounds
 
 
 def update_class_dict(cls: any,

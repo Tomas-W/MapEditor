@@ -1,9 +1,10 @@
 import pygame
 
 FONT = "Futura"
+
+
 label_font = pygame.font.SysFont(name=FONT,
                                  size=22)
-
 
 # Menus
 presets_font = pygame.font.SysFont(name=FONT,
