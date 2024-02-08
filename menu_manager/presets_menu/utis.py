@@ -1,11 +1,10 @@
 import os
-from typing import List
 
-from settings.panels import PRESETS_MAX_NAME_LENGTH
+from settings.presets import PRESETS_MAX_NAME_LENGTH
 from settings.paths import PRESETS_DIR
 
 
-def get_presets_dir_names() -> List[str]:
+def get_presets_dir_names() -> list[str]:
     """
        Creates and returns a list of folders in the PRESETS_DIR folder.
 
@@ -15,7 +14,7 @@ def get_presets_dir_names() -> List[str]:
     return sorted([f.name for f in os.scandir(PRESETS_DIR) if f.is_dir()])
 
 
-def get_shortened_presets_dir_names(names: List[str]) -> List[str]:
+def get_shortened_presets_dir_names(names: list[str]) -> list[str]:
     """
         Gets a list with names of presets and returns a new list that
             caps each names length to PRESETS_MAX_NAME_LENGTH and

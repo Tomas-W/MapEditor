@@ -1,10 +1,6 @@
 from settings.setup import *
 
 
-RIGHT_PANEL_COLOR = BROWN
-BOTTOM_PANEL_COLOR = BROWN
-
-
 # ######## Presets ######## #
 PRESETS_MAX_NAME_LENGTH = 15
 PRESETS_NAME_FONT_HEIGHT = 32  # linked with fonts.py

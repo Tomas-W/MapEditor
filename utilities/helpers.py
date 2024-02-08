@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Any
+from typing import Any, Tuple
 
 import pygame
 
@@ -26,7 +26,7 @@ def get_scaled_backgrounds(background: pygame.Surface) -> dict[str, pygame.Surfa
     return backgrounds
 
 
-def update_class_dict(cls: any,
+def update_class_dict(cls: Any,
                       attributes: dict):
     """
         Gets a dict containing instance attributes and
@@ -49,7 +49,7 @@ def update_class_dict(cls: any,
     cls.__dict__.update(approved_dict)
 
 
-def can_place_tile(editor: any,
+def can_place_tile(editor: Any,
                    grid_x: int,
                    grid_y: int) -> bool:
     """
@@ -87,7 +87,7 @@ def can_place_tile(editor: any,
     return True
 
 
-def can_remove_tile(editor: any,
+def can_remove_tile(editor: Any,
                     grid_x: int,
                     grid_y: int) -> bool:
     """
@@ -117,7 +117,7 @@ def can_remove_tile(editor: any,
     return False
 
 
-def get_minimap_dimensions(editor: any) -> Tuple[float, float, float]:
+def get_minimap_dimensions(editor: Any) -> Tuple[float, float, float]:
     """
        Get a tuple containing the dimensions of the minimap
        It is scaled to fit the minimap section on the Editor.

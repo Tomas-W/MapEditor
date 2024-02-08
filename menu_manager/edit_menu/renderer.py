@@ -1,12 +1,12 @@
 from collections import OrderedDict
-from typing import Any, List
+from typing import Any
 
 import pygame
 
 from menu_manager.edit_menu import screens, actions
 from menu_manager.edit_menu import utils
 
-from utilities import buttons, helpers
+from utilities import buttons
 
 from settings.buttons import EDIT_BTN, PREF_BTN, CROP_BTN, BACK_BTN_LARGE, OK_BTN_LARGE, WIPE_BTN
 from settings.setup import DARK_ORANGE
@@ -33,7 +33,7 @@ class EditMenuRenderer:
         self.preferences_dict: OrderedDict[str, int] = utils.get_preferences_dict(
             editor=self.menu_controller.editor
         )
-        self.preferences_outline_recs: List[pygame.rect.Rect] = []
+        self.preferences_outline_recs: list[pygame.rect.Rect] = []
 
         # Buttons
         self.edit_button = buttons.get_utility_button(editor=self.editor,

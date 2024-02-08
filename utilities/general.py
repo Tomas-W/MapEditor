@@ -1,8 +1,6 @@
-from typing import List, Tuple
-
 import numpy as np
 
-from settings.panels import *
+from settings.presets import *
 from settings.paths import *
 
 
@@ -38,7 +36,7 @@ def get_fresh_world_data(columns: int,
     return np.full((rows, columns), -1)
 
 
-def get_sorted_tile_names(preset_name: str) -> List[str]:
+def get_sorted_tile_names(preset_name: str) -> list[str]:
     """
         Get a list of tile names sorted by their index.
 
@@ -57,8 +55,8 @@ def get_sorted_tile_names(preset_name: str) -> List[str]:
     return tile_names
 
 
-def limit_string_length(string_list: List[str] | str,
-                        max_length: int) -> List[str] | str:
+def limit_string_length(string_list: list[str] | str,
+                        max_length: int) -> list[str] | str:
     """
         Gets a list of strings and limit the length to the given maximum.
         If length is longer, name wil be cut and .. will be appended.
@@ -81,7 +79,7 @@ def limit_string_length(string_list: List[str] | str,
     return string_list
 
 
-def get_tile_names(preset_name: str) -> List[str]:
+def get_tile_names(preset_name: str) -> list[str]:
     """
        Get a list of tile names for the current preset by
         checking the file name.
@@ -102,7 +100,7 @@ def get_tile_names(preset_name: str) -> List[str]:
                                max_length=MAX_TILE_NAME_LENGTH)
 
 
-def get_tile_indexes(preset_name: str) -> List[int]:
+def get_tile_indexes(preset_name: str) -> list[int]:
     """
        Get a sorted list of tile indexes for the preset.
 

@@ -1,5 +1,3 @@
-from typing import List, Dict
-
 import pygame
 
 import utilities.general as general
@@ -69,7 +67,7 @@ def get_sprites(location: str,
                 number_sprites: int,
                 width: int,
                 height: int,
-                scale: int) -> List[pygame.Surface]:
+                scale: int) -> list[pygame.Surface]:
     """
         Returns a list of individual sprites taken from the given sheet.
 
@@ -110,7 +108,7 @@ def get_preview_image(preset_name: str) -> pygame.Surface:
     return get_preset_sprites(preset_name=preset_name)[0]
 
 
-def get_preset_sprites(preset_name: str) -> List[pygame.Surface]:
+def get_preset_sprites(preset_name: str) -> list[pygame.Surface]:
     """
         Get a list of sprites for the current preset.
 
@@ -132,7 +130,7 @@ def get_preset_sprites(preset_name: str) -> List[pygame.Surface]:
     return sprite_list
 
 
-def get_all_level_objects() -> Dict[int, pygame.Surface]:
+def get_all_level_objects() -> dict[int, pygame.Surface]:
     """
         Get all level objects from a folder.
 

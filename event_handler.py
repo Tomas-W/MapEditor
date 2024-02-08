@@ -1,10 +1,12 @@
+from typing import Any
+
 import pygame
 
 
 class EventHandler:
 
     def __init__(self,
-                 editor: any):
+                 editor: Any):
 
         self.editor = editor
 

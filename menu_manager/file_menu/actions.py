@@ -45,7 +45,6 @@ def load_new_map(editor: Any,
             editor (Any): Current Editor instance.
             selected_map (str): Map the user selected to load.
     """
-    map_attributes = utils.get_deserialized_map_details(editor=editor,
-                                                        map_name=selected_map)
+    map_attributes = utils.get_deserialized_map_details(map_name=selected_map)
     helpers.update_class_dict(cls=editor,
                               attributes=map_attributes)

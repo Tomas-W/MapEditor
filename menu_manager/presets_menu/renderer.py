@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 import pygame
 
@@ -9,7 +9,7 @@ from utilities import general
 from utilities import buttons
 
 from settings.buttons import SETS_BTN
-from settings.panels import PRESETS_MAX_NAME_LENGTH
+from settings.presets import PRESETS_MAX_NAME_LENGTH
 
 
 class PresetsMenuRenderer:
@@ -29,12 +29,12 @@ class PresetsMenuRenderer:
         self.menu_controller = menu_controller
 
         # Info
-        self.preset_names: List[str] = utis.get_presets_dir_names()
-        self.shortened_preset_names: List[str] = general.limit_string_length(
+        self.preset_names: list[str] = utis.get_presets_dir_names()
+        self.shortened_preset_names: list[str] = general.limit_string_length(
             string_list=self.preset_names,
             max_length=PRESETS_MAX_NAME_LENGTH
         )
-        self.preset_names_outline_rects: List[pygame.rect.Rect] = []
+        self.preset_names_outline_rects: list[pygame.rect.Rect] = []
 
         # Buttons
         self.sets_button = buttons.get_utility_button(editor=self.editor,

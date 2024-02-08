@@ -4,13 +4,13 @@ All functions draw to the screen.
 These functions do NOT interact with the program directly.
 """
 
-from typing import Any, List
+from typing import Any
 
 import pygame
 
 from utilities import fonts, render_text, sprites
 
-from settings.panels import *
+from settings.presets import *
 
 
 def display_preset_names(presets_renderer: Any) -> None:
@@ -20,7 +20,7 @@ def display_preset_names(presets_renderer: Any) -> None:
        Returns:
            None.
     """
-    presets_rects_outlines: List[pygame.rect.Rect] = []
+    presets_rects_outlines: list[pygame.rect.Rect] = []
 
     for i, name in enumerate(presets_renderer.preset_names):
         text_pos = render_text.position(screen=presets_renderer.editor.screen,

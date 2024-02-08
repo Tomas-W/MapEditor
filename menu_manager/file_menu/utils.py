@@ -6,14 +6,12 @@ These functions do NOT interact with the program directly.
 
 import os
 import pickle
-from typing import Any, Dict, List, Tuple
-
-import pygame
+from typing import Any, Tuple
 
 from settings.paths import MAPS_DIR
 
 
-def get_saved_maps_names() -> List[str]:
+def get_saved_maps_names() -> list[str]:
     """
         Creates and returns a list with the names of the saved maps in the MAPS_DIR folder.
 
@@ -23,13 +21,11 @@ def get_saved_maps_names() -> List[str]:
     return os.listdir(MAPS_DIR)
 
 
-def get_deserialized_map_details(editor: Any,
-                                 map_name: str) -> Dict:
+def get_deserialized_map_details(map_name: str) -> dict:
     """
         Deserialize a pickled map and load the attributes into a dict.
 
         Args:
-            editor (any): Current Editor object.
             map_name (str): Name of the map to deserialize.
 
         Returns:
@@ -38,12 +34,6 @@ def get_deserialized_map_details(editor: Any,
     load_data = get_loaded_map_details(map_name=map_name)
 
     rows, columns, grid_size_x, grid_size_y, world_data = load_data
-
-    background = pygame.transform.scale(surface=editor.background,
-                                        size=(
-                                            columns * grid_size_x,
-                                            rows * grid_size_y
-                                        ))
 
     dict_updater = {
         "scroll_x": 0,
@@ -57,7 +47,6 @@ def get_deserialized_map_details(editor: Any,
         "grid_size_y": grid_size_y,
 
         "world_data": world_data,
-        "background": background,
 
         "is_building": True,
     }
@@ -65,7 +54,7 @@ def get_deserialized_map_details(editor: Any,
     return dict_updater
 
 
-def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, List[List[int]]]:
+def get_loaded_map_details(map_name: str) -> Tuple[int, int, int, int, list[list[int]]]:
     """
         Loads map-dependent variables from a pickle file and deserializes it.
 

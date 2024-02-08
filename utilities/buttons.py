@@ -1,10 +1,10 @@
-from typing import List, Self, Union, Dict
+from typing import Any, List, Self
 
 import pygame
 
 from settings.buttons import *
 from settings.paths import *
-from settings.panels import *
+from settings.presets import *
 
 from utilities.sprites import get_preset_sprites
 
@@ -15,8 +15,8 @@ class TileButton:
                  y: int,
                  image: pygame.Surface,
                  scale: int,
-                 tile_index: Union[None, int],
-                 editor: any) -> Self:
+                 tile_index: None | int,
+                 editor: Any) -> Self:
         """
             Initialize a TileButton to be used in the right panel to
                 place tiles on the grid.
@@ -85,7 +85,7 @@ class UtilityButton:
                 y (int): The y-coordinate of the button's top-left corner.
                 image (pygame.Surface): Image used for the button.
                 scale (int): The scaling factor for the image.
-                name str): Name of the utility.
+                name (str): Name of the utility.
                 editor (any): Current Editor instance.
 
         """

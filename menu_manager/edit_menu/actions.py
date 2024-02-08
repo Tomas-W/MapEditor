@@ -10,11 +10,6 @@ import numpy as np
 from menu_manager.edit_menu import utils
 
 from utilities import helpers
-from utilities import render_text
-from utilities import fonts
-
-from settings.setup import WHITE
-from settings.menus import PREFERENCE_MESSAGE_Y
 
 
 def prepare_preferences_menu(editor: Any,
@@ -102,7 +97,7 @@ def update_world_data_size(editor: Any,
             editor.world_data = editor.world_data[:, :value - editor.columns]
 
 
-def manage_preferences_change(menu_renderer: Any) -> None:
+def manage_preferences_change(menu_renderer: Any) -> None | str:
     """
         Checks if the user selected preference and its value are allowed.
         If so, world_data will be updated and a message will appear.
@@ -111,6 +106,9 @@ def manage_preferences_change(menu_renderer: Any) -> None:
 
         Args:
              menu_renderer (Any): Current EditMenuRenderer instance.
+
+        Returns:
+            None | str: Feedback text to inform user of their action.
     """
     pref_name = menu_renderer.editor.selected_preference_name
     pref_value = int(menu_renderer.editor.selected_preference_value)
@@ -122,28 +120,21 @@ def manage_preferences_change(menu_renderer: Any) -> None:
         # check if tiles are outside the new world_data size
         max_rows, max_cols = utils.get_grid_max_row_col(world_data=menu_renderer.editor.world_data)
 
-        if menu_renderer.editor.selected_preference_name == "rows" and pref_value_change < max_rows:
-            update = False
-        elif menu_renderer.editor.selected_preference_name == "columns" and pref_value_change < max_cols:
-            update = False
-        else:
-            update = True
+        if menu_renderer.editor.selected_preference_name == "columns" and pref_value_change < max_cols:
+            # Tiles present in cols to be removed
+            preference_feedback = "Tiles present in columns to be removed"
 
-        if update:
-            # new size is accepted
+        elif menu_renderer.editor.selected_preference_name == "rows" and pref_value_change < max_rows:
+            preference_feedback = "Tiles present in rows to be removed"
+
+        else:
             update_world_data_size(editor=menu_renderer.editor,
                                    name=menu_renderer.editor.selected_preference_name,
                                    value=pref_value_change)
 
-            accepted_text = utils.get_preferences_accepted_text(pref_name=pref_name,
-                                                                pref_value=pref_value,
-                                                                pref_value_change=pref_value_change)
-            # Blit change successful tet
-            render_text.centered_x(screen=menu_renderer.editor.screen,
-                                   text=accepted_text,
-                                   font=fonts.popup_font,
-                                   color=WHITE,
-                                   y_pos=PREFERENCE_MESSAGE_Y)
+            preference_feedback = utils.get_preferences_accepted_text(pref_name=pref_name,
+                                                                      pref_value=pref_value,
+                                                                      pref_value_change=pref_value_change)
 
             apply_preference_change(menu_renderer=menu_renderer,
                                     pref_name=pref_name,
@@ -151,13 +142,9 @@ def manage_preferences_change(menu_renderer: Any) -> None:
 
     else:
         # new size is not accepted
-        denied_text = utils.get_preferences_denied_text(
+        preference_feedback = utils.get_preferences_denied_text(
             pref_name=pref_name,
             pref_value=pref_value,
             pref_value_change=pref_value_change)
-        # Blit denied text
-        render_text.centered_x(screen=menu_renderer.editor.screen,
-                               text=denied_text,
-                               font=fonts.popup_font,
-                               color=WHITE,
-                               y_pos=PREFERENCE_MESSAGE_Y)
+
+    return preference_feedback

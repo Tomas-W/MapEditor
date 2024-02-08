@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 import pygame
 
@@ -29,8 +29,8 @@ class FileMenuRenderer:
         self.popup_renderer = self.menu_controller.popup_renderer
 
         # Info
-        self.saved_maps_names: List[str] = utils.get_saved_maps_names()
-        self.saved_maps_outline_rects: List[pygame.rect.Rect] = []
+        self.saved_maps_names: list[str] = utils.get_saved_maps_names()
+        self.saved_maps_outline_rects: list[pygame.rect.Rect] = []
         self.selected_map: str = None
 
         # Buttons

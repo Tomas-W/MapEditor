@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Tuple
 
 import pygame
 
@@ -11,7 +11,7 @@ def position(screen: pygame.Surface,
              color: Tuple[int, int, int],
              x_pos: int,
              y_pos: int,
-             get_rect: bool = False) -> Union[None, pygame.Rect]:
+             get_rect: bool = False) -> None | pygame.Rect:
     """
        Generic function to draw text on screen at given position.
 

@@ -5,7 +5,7 @@ These functions do NOT interact with the program directly.
 """
 
 
-from typing import Any, List
+from typing import Any
 
 import pygame
 
@@ -29,7 +29,7 @@ def display_load_map(menu_renderer: Any) -> None:
            None.
     """
     menu_renderer.saved_maps_names = utils.get_saved_maps_names()
-    saved_maps_outline_rects: List[pygame.rect.Rect] = []
+    saved_maps_outline_rects: list[pygame.rect.Rect] = []
 
     # Draw map names
     for i, name in enumerate(menu_renderer.saved_maps_names):

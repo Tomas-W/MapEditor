@@ -5,13 +5,13 @@ import pygame
 
 pygame.init()
 
-from settings.canvas import *
 from settings.minimap import *
-from settings.panels import *
+from settings.presets import *
 from settings.errors import *
 
 screen = pygame.display.set_mode((SCREEN_WIDTH + RIGHT_MARGIN,
                                   SCREEN_HEIGHT + BOTTOM_MARGIN))
+pygame.display.message_box()
 
 from menu_manager.menu_controller import MenuController
 from event_handler import EventHandler
@@ -276,6 +276,7 @@ class Editor:
             Scales up all map features by increasing the scale by 0.2 up to
                 a set maximum.
         """
+
         if self.scale < 1.6:
             old_mid_col = (self.stop_col - self.start_col) / 2
             old_mid_row = (self.stop_row - self.start_row) / 2
@@ -736,11 +737,11 @@ class Editor:
             # Scrolling
             self.event_handler.scrolling_events()
 
-            # Errors
-            self.error_handler.set_out_of_bounds_error()
-            self.error_handler.set_preset_error()
-            self.error_handler.set_tile_error()
-            self.error_handler.display_error_messages()
+            # # Errors
+            # self.error_handler.set_out_of_bounds_error()
+            # self.error_handler.set_preset_error()
+            # self.error_handler.set_tile_error()
+            # self.error_handler.display_error_messages()
 
             # Menus
             self.menu_controller.run()
@@ -772,6 +773,12 @@ class Editor:
                     self.draw_tile_labels()
                     self.highlight_selected_tile()
                     self.place_and_remove_tiles()
+
+            # Errors
+            self.error_handler.set_out_of_bounds_error()
+            self.error_handler.set_preset_error()
+            self.error_handler.set_tile_error()
+            self.error_handler.display_error_messages()
 
             pygame.display.update()
             self.clock.tick(180)

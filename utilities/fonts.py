@@ -8,7 +8,7 @@ label_font = pygame.font.SysFont(name=FONT,
 
 # Menus
 presets_font = pygame.font.SysFont(name=FONT,
-                                   size=32)  # linked with panels.py
+                                   size=32)  # linked with presets.py
 rename_map_font = pygame.font.SysFont(name=FONT,
                                       size=40)
 load_map_font = pygame.font.SysFont(name=FONT,

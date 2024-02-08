@@ -1,6 +1,9 @@
 from utilities.sprites import *
 
 
+BUTTON_WIDTH = 64
+BUTTON_HEIGHT = 32
+
 BUTTON_HIGHLIGHT_COLOR = RED
 BUTTON_HIGHLIGHT_WIDTH = 4
 BUTTON_MARGIN_X = 16
@@ -238,6 +241,3 @@ ZOOM_OUT_BTN = {
     "scale": 1,
     "name": "zoom_out_btn",
 }
-
-
-

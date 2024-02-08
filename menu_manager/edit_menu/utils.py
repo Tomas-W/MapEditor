@@ -5,7 +5,7 @@ These functions do NOT interact with the program directly.
 """
 
 from collections import OrderedDict
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
 import numpy as np
 
@@ -21,7 +21,7 @@ def get_preferences_accepted_text(pref_name: str,
 def get_preferences_denied_text(pref_name: str,
                                 pref_value: int,
                                 pref_value_change: int) -> str:
-    return f"Setting: '{pref_name}' can not change from '{pref_value}' to '{pref_value_change}'"
+    return f"Setting: '{pref_name}' can not change from '{pref_value}' to '{pref_value_change}'\n(tiles may be present)"
 
 
 def get_preferences_dict(editor: Any) -> OrderedDict[str, int]:
@@ -101,7 +101,7 @@ def get_grid_max_row_col(world_data: np.ndarray) -> Tuple[int, int]:
         Second value is the number of columns, descending, that contain no -1
 
         Args:
-            world_data (List[List[int]]: Nested list containing tile indexes of the map.
+            world_data (list[list[int]]: Nested list containing tile indexes of the map.
 
         Returns:
             Tuple[int, int]: Number of rows and columns that can be safely removed.

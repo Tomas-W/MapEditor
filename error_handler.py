@@ -1,4 +1,4 @@
-from typing import Dict, Self
+from typing import Any, Self
 
 import numpy as np
 
@@ -6,13 +6,13 @@ import utilities.render_text as text
 import utilities.fonts as fonts
 from settings.errors import *
 
-from settings.panels import *
+from settings.presets import *
 
 
 class ErrorHandler:
 
     def __init__(self,
-                 editor: any) -> Self:
+                 editor: Any) -> Self:
         self.editor = editor
 
         self.ERROR_COLOR = ERROR_COLOR
@@ -20,7 +20,7 @@ class ErrorHandler:
         self.ERROR_Y = ERROR_Y
         self.ERROR_Y_SPACING = ERROR_Y_SPACING
 
-        self.error_messages: Dict[str, str] = {}
+        self.error_messages: dict[str, str] = {}
 
         self.OUT_OF_BOUNDS_ERROR = f"Map cannot be saved." \
                                    f" Tiles found outside of grid." \
@@ -62,7 +62,7 @@ class ErrorHandler:
         else:
             self.error_messages["tile"] = None
 
-    def set_out_of_bounds_error(self):
+    def set_out_of_bounds_error(self) -> None:
         """
             Sets out_of_bounds error message if tiles are places outside the current grid.
             If no error, message is set to None.

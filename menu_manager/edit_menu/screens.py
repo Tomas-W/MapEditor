@@ -4,7 +4,7 @@ All functions draw to the screen.
 These functions do NOT interact with the program directly.
 """
 
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
 import pygame
 
@@ -29,7 +29,7 @@ def display_preferences(menu_renderer: Any) -> None:
        Returns:
            None.
     """
-    preferences_outline_recs: List[pygame.rect.Rect] = []
+    preferences_outline_recs: list[pygame.rect.Rect] = []
     # Preferences
     for i, (key, val) in enumerate(menu_renderer.preferences_dict.items()):
         preference = render_text.position(screen=menu_renderer.editor.screen,
@@ -64,11 +64,20 @@ def display_preferences(menu_renderer: Any) -> None:
                            get_rect=False)
 
     # Menu Options
+    preference_changed_text = None
     if menu_renderer.pressed_ok_button():
-        actions.manage_preferences_change(menu_renderer=menu_renderer)
+        preference_changed_text = actions.manage_preferences_change(menu_renderer=menu_renderer)
 
     if menu_renderer.pressed_back_button():
         menu_renderer.menu_controller.set_state("reset")
+
+    # feedback
+    if preference_changed_text is not None:
+        render_text.centered_x(screen=menu_renderer.editor.screen,
+                               text=preference_changed_text,
+                               font=fonts.popup_font,
+                               color=WHITE,
+                               y_pos=PREFERENCE_MESSAGE_Y)
 
 
 def highlight_and_return_selected_preference(menu_renderer: Any) -> None | Tuple[str, int]:
